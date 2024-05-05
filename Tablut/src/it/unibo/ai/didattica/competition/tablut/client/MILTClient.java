@@ -7,9 +7,15 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Random;
 
-import it.unibo.ai.didattica.competition.tablut.domain.*;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
-import melissailoveyou.domain.MILTState;
+import it.unibo.ai.didattica.competition.tablut.domain.StateTablut;
+import it.unibo.ai.didattica.competition.tablut.domain.Game;
+import it.unibo.ai.didattica.competition.tablut.domain.GameAshtonTablut;
+import it.unibo.ai.didattica.competition.tablut.domain.GameModernTablut;
+import it.unibo.ai.didattica.competition.tablut.domain.GameTablut;
+import melissailoveyou.domain.*;
+import it.unibo.ai.didattica.competition.tablut.domain.State;
+import it.unibo.ai.didattica.competition.tablut.domain.StateBrandub;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
 
 /**
@@ -17,28 +23,48 @@ import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
  * @author Alessio Bennati
  *
  */
-public class MelissaILoveTablutClient extends TablutClient {
+public class MILTClient extends TablutClient {
 
 	private int game;
 
-	public MelissaILoveTablutClient(String player, String name, int gameChosen, int timeout, String ipAddress)
+	public MILTClient(String player, String name, int gameChosen, int timeout, String ipAddress)
 			throws UnknownHostException, IOException {
 		super(player, name, timeout, ipAddress);
 		game = gameChosen;
 	}
 
-	public MelissaILoveTablutClient(String player, String name, int timeout, String ipAddress)
+	public MILTClient(String player, String name, int timeout, String ipAddress)
 			throws UnknownHostException, IOException {
 		this(player, name, 4, timeout, ipAddress);
 	}
 
-	public MelissaILoveTablutClient(String player, int timeout, String ipAddress)
-			throws UnknownHostException, IOException {
+	public MILTClient(String player, int timeout, String ipAddress) throws UnknownHostException, IOException {
 		this(player, "MelissaILoveTablut", 4, timeout, ipAddress);
 	}
 
-	public MelissaILoveTablutClient(String player) throws UnknownHostException, IOException {
+	public MILTClient(String player) throws UnknownHostException, IOException {
 		this(player, "MelissaILoveTablut", 4, 60, "localhost");
+	}
+
+	private int minMax(MILTState state, int depth, boolean maximizer) {
+
+		if (depth == 0 || state.isTerminal()) {
+			return state.evaluation();
+		}
+		if (maximizer) {
+			int value = Integer.MIN_VALUE;
+			for (MILTState child : state.getChildren()) {
+				value = Math.max(value, minMax(child, depth - 1, false));
+			}
+			return value;
+		} else {
+			int value = Integer.MAX_VALUE;
+			for (MILTState child : state.getChildren()) {
+				value = Math.min(value, minMax(child, depth - 1, true));
+			}
+			return value;
+		}
+
 	}
 
 	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
@@ -64,7 +90,7 @@ public class MelissaILoveTablutClient extends TablutClient {
 		}
 		System.out.println("Selected client: " + args[0]);
 
-		MelissaILoveTablutClient client = new MelissaILoveTablutClient(role, name, gametype, timeout, ipAddress);
+		MILTClient client = new MILTClient(role, name, gametype, timeout, ipAddress);
 		client.run();
 	}
 
@@ -85,17 +111,31 @@ public class MelissaILoveTablutClient extends TablutClient {
 			state = new StateTablut();
 			rules = new GameTablut();
 			break;
+		case 2:
+			state = new StateTablut();
+			rules = new GameModernTablut();
+			break;
+		case 3:
+			state = new StateBrandub();
+			rules = new GameTablut();
+			break;
+		case 4:
+			state = new StateTablut();
+			state.setTurn(State.Turn.WHITE);
+			rules = new GameAshtonTablut(99, 0, "garbage", "fake", "fake");
+			System.out.println("Ashton Tablut game");
+			break;
 		default:
 			System.out.println("Error in game selection");
 			System.exit(4);
 		}
 
 		System.out.println("You are player " + this.getPlayer().toString() + "!");
-		
+
 		BitSet whites = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
 		BitSet blacks = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
 		BitSet king = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
-		
+
 		while (true) {
 			try {
 				this.read();
@@ -141,13 +181,28 @@ public class MelissaILoveTablutClient extends TablutClient {
 							}
 						}
 					}
-					MILTState miltState=new MILTState(MILTState.Turn.WHITE,king,whites,blacks);
-					
+					MILTState miltState = new MILTState(MILTState.Turn.WHITE, king, whites, blacks);
+					MILTAction choosen = null;
+					int maxEvaluation = -1;
+					int evaluation = -1;
 
-
-					System.out.println("Mossa scelta: " + a.toString());
 					try {
-						this.write(a);
+						for (MILTAction miltAction : miltState.getAvailableActions()) {
+							System.out.println("evaluating " + miltAction.toAction().toString());
+							evaluation = minMax(miltState.apply(miltAction), 3, true);
+							System.out.println("evaluated "+evaluation+"\n");
+							if (evaluation > maxEvaluation) {
+								maxEvaluation = evaluation;
+								choosen = miltAction;
+							}
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+
+					System.out.println("Mossa scelta: " + choosen.toString());
+					try {
+						this.write(choosen.toAction());
 					} catch (ClassNotFoundException | IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -178,67 +233,48 @@ public class MelissaILoveTablutClient extends TablutClient {
 
 				// Mio turno
 				if (this.getCurrentState().getTurn().equals(StateTablut.Turn.BLACK)) {
-					int[] buf;
-					for (int i = 0; i < state.getBoard().length; i++) {
-						for (int j = 0; j < state.getBoard().length; j++) {
-							if (state.getPawn(i, j).equalsPawn(State.Pawn.BLACK.toString())) {
-								buf = new int[2];
-								buf[0] = i;
-								buf[1] = j;
-								myPawns.add(buf);
-							} else if (state.getPawn(i, j).equalsPawn(State.Pawn.EMPTY.toString())) {
-								buf = new int[2];
-								buf[0] = i;
-								buf[1] = j;
-								empty.add(buf);
+					Pawn p;
+					for (int i = 0; i < MILTState.BOARD_SIZE; i++) {
+						for (int j = 0; j < MILTState.BOARD_SIZE; j++) {
+							p = state.getPawn(i, j);
+							switch (p) {
+							case KING -> {
+								king.set(i * MILTState.BOARD_SIZE + j);
+							}
+
+							case WHITE -> {
+								whites.set(i * MILTState.BOARD_SIZE + j);
+
+							}
+
+							case BLACK -> {
+								blacks.set(i * MILTState.BOARD_SIZE + j);
+							}
+							default -> {
+							}
 							}
 						}
 					}
+					MILTState miltState = new MILTState(MILTState.Turn.WHITE, king, whites, blacks);
+					MILTAction choosen = null;
+					int maxEvaluation = -1;
+					int evaluation = -1;
 
-					int[] selected = null;
-
-					boolean found = false;
-					Action a = null;
-					try {
-						a = new Action("z0", "z0", State.Turn.BLACK);
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					;
-					while (!found) {
-						selected = myPawns.get(new Random().nextInt(myPawns.size() - 1));
-						String from = this.getCurrentState().getBox(selected[0], selected[1]);
-
-						selected = empty.get(new Random().nextInt(empty.size() - 1));
-						String to = this.getCurrentState().getBox(selected[0], selected[1]);
-
-						try {
-							a = new Action(from, to, State.Turn.BLACK);
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+					for (MILTAction miltAction : miltState.getAvailableActions()) {
+						evaluation = minMax(miltState.apply(miltAction), 15, true);
+						if (evaluation > maxEvaluation) {
+							maxEvaluation = evaluation;
+							choosen = miltAction;
 						}
-
-						System.out.println("try: " + a.toString());
-						try {
-							rules.checkMove(state, a);
-							found = true;
-						} catch (Exception e) {
-
-						}
-
 					}
 
-					System.out.println("Mossa scelta: " + a.toString());
+					System.out.println("Mossa scelta: " + choosen.toString());
 					try {
-						this.write(a);
+						this.write(choosen.toAction());
 					} catch (ClassNotFoundException | IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					myPawns.clear();
-					empty.clear();
 
 				}
 

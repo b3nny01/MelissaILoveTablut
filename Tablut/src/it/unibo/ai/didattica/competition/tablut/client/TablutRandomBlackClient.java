@@ -10,7 +10,7 @@ public class TablutRandomBlackClient {
 		if (args.length>0){
 			array = new String[]{"BLACK", args[0]};
 		}
-		MelissaILoveTablutClient.main(array);
+		TablutRandomClient.main(array);
 	}
 
 }
