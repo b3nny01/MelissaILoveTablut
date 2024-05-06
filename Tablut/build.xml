@@ -62,15 +62,6 @@
         </java>
     </target>
 
-    <target name="miltwhite">
-        <java classname="it.unibo.ai.didattica.competition.tablut.client.MILTWhiteClient" fork="true">
-            <classpath>
-                <pathelement location="lib/gson-2.2.2.jar"/>
-                <pathelement location="build"/>
-            </classpath>
-        </java>
-    </target>
-
     <target name="randomblack">
         <java classname="it.unibo.ai.didattica.competition.tablut.client.TablutRandomBlackClient" fork="true">
             <classpath>
@@ -79,6 +70,24 @@
             </classpath>
         </java>
     </target>
+	
+	 <target name="miltwhite">
+	        <java classname="it.unibo.ai.didattica.competition.tablut.client.MILTWhiteClient" fork="true">
+	            <classpath>
+	                <pathelement location="lib/gson-2.2.2.jar"/>
+	                <pathelement location="build"/>
+	            </classpath>
+	        </java>
+	    </target>
+	
+	 <target name="miltblack">
+	        <java classname="it.unibo.ai.didattica.competition.tablut.client.MILTBlackClient" fork="true">
+	            <classpath>
+	                <pathelement location="lib/gson-2.2.2.jar"/>
+	                <pathelement location="build"/>
+	            </classpath>
+	        </java>
+	    </target>
 
     <target name="random-jar">
         <jar destfile="random.jar" filesetmanifest="mergewithoutmain">

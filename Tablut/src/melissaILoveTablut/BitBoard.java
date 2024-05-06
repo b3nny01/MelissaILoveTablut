@@ -1,4 +1,4 @@
-package melissailoveyou.domain;
+package melissaILoveTablut;
 
 import java.util.BitSet;
 

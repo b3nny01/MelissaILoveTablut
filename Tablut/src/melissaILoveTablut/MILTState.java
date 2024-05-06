@@ -1,4 +1,4 @@
-package melissailoveyou.domain;
+package melissaILoveTablut;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -43,12 +43,13 @@ public class MILTState {
 	private static BitSet initEscapes() {
 		BitSet result = new BitSet(BOARD_SIZE * BOARD_SIZE);
 		result.set(1, 3);
-		result.set(7, 9);
+		result.set(6, 8);
 		result.set(9);
 		result.set(17, 19);
 		result.set(26);
 		result.set(54);
 		result.set(62, 64);
+		result.set(71);
 		result.set(73, 75);
 		result.set(78, 80);
 		return result;
@@ -193,7 +194,8 @@ public class MILTState {
 			// aggiungi thrones cattura king
 			if (col >= 2) {
 				if (result.getBlacks().get(row * BOARD_SIZE + col - 1) && !camps.get(row * BOARD_SIZE + col - 1)) {
-					if (result.getWhites().get(row + BOARD_SIZE + col - 2) || camps.get(row * BOARD_SIZE + col - 2)) {
+					if (result.getWhites().get(row + BOARD_SIZE + col - 2) || camps.get(row * BOARD_SIZE + col - 2)
+							|| throne.get(row * BOARD_SIZE + col - 2)) {
 						result.getBlacks().clear(row * BOARD_SIZE + col - 1);
 					}
 				}
@@ -202,7 +204,8 @@ public class MILTState {
 			// capture right
 			if (col < BOARD_SIZE - 2) {
 				if (result.getBlacks().get(row * BOARD_SIZE + col + 1) && !camps.get(row * BOARD_SIZE + col + 1)) {
-					if (result.getWhites().get(row + BOARD_SIZE + col + 2) || camps.get(row * BOARD_SIZE + col + 2)) {
+					if (result.getWhites().get(row + BOARD_SIZE + col + 2) || camps.get(row * BOARD_SIZE + col + 2)
+							|| throne.get(row * BOARD_SIZE + col + 2)) {
 						result.getBlacks().clear(row * BOARD_SIZE + col + 1);
 					}
 				}
@@ -212,8 +215,8 @@ public class MILTState {
 			// capture up
 			if (row >= 2) {
 				if (result.getBlacks().get((row - 1) * BOARD_SIZE + col) && !camps.get((row - 1) * BOARD_SIZE + col)) {
-					if (result.getWhites().get((row - 2) * BOARD_SIZE + col)
-							|| camps.get((row - 2) * BOARD_SIZE + col)) {
+					if (result.getWhites().get((row - 2) * BOARD_SIZE + col) || camps.get((row - 2) * BOARD_SIZE + col)
+							|| throne.get((row - 2) * BOARD_SIZE + col)) {
 						result.getBlacks().clear((row - 1) * BOARD_SIZE + col);
 					}
 				}
@@ -223,8 +226,8 @@ public class MILTState {
 			// capture down
 			if (row < BOARD_SIZE - 2) {
 				if (result.getBlacks().get((row + 1) * BOARD_SIZE + col) && !camps.get((row + 1) * BOARD_SIZE + col)) {
-					if (result.getWhites().get((row + 2) * BOARD_SIZE + col)
-							|| camps.get((row + 2) * BOARD_SIZE + col)) {
+					if (result.getWhites().get((row + 2) * BOARD_SIZE + col) || camps.get((row + 2) * BOARD_SIZE + col)
+							|| throne.get((row + 2) * BOARD_SIZE + col)) {
 						result.getBlacks().clear((row + 1) * BOARD_SIZE + col);
 					}
 				}
@@ -439,6 +442,45 @@ public class MILTState {
 		invalid.or(blacks);
 
 		if (turn == Turn.WHITE) {
+			// king
+			i = this.king.nextSetBit(0);
+			if (i >= 0) {
+				row = i / BOARD_SIZE;
+				col = i - row * BOARD_SIZE;
+
+				// moving right
+				for (int j = 1; j < BOARD_SIZE - col; j++) {
+					if (invalid.get(i + j)) {
+						break;
+					}
+					actions.add(new MILTAction(PieceType.WHITE_KING, i, i + j));
+				}
+
+				// moving left
+				for (int j = 1; j <= col; j++) {
+					if (invalid.get(i - j)) {
+						break;
+					}
+					actions.add(new MILTAction(PieceType.WHITE_KING, i, i - j));
+				}
+
+				// moving up
+				for (int j = 1; j < BOARD_SIZE - row; j++) {
+					if (invalid.get((row + j) * BOARD_SIZE + col)) {
+						break;
+					}
+					actions.add(new MILTAction(PieceType.WHITE_KING, i, (row + j) * BOARD_SIZE + col));
+				}
+
+				// moving down
+				for (int j = 1; j <= row; j++) {
+					if (invalid.get((row - j) * BOARD_SIZE + col)) {
+						break;
+					}
+					actions.add(new MILTAction(PieceType.WHITE_KING, i, (row - j) * BOARD_SIZE + col));
+				}
+			}
+
 			// white pawns
 			for (i = whites.nextSetBit(0); i >= 0; i = whites.nextSetBit(i + 1)) {
 				if (i == Integer.MAX_VALUE) {
@@ -477,45 +519,6 @@ public class MILTState {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.WHITE_PAWN, i, (row - j) * BOARD_SIZE + col));
-				}
-			}
-
-			// king
-			i = this.king.nextSetBit(0);
-			if (i >= 0) {
-				row = i / BOARD_SIZE;
-				col = i - row * BOARD_SIZE;
-
-				// moving right
-				for (int j = 1; j < BOARD_SIZE - col; j++) {
-					if (invalid.get(i + j)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_KING, i, i + j));
-				}
-
-				// moving left
-				for (int j = 1; j <= col; j++) {
-					if (invalid.get(i - j)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_KING, i, i - j));
-				}
-
-				// moving up
-				for (int j = 1; j < BOARD_SIZE - row; j++) {
-					if (invalid.get((row + j) * BOARD_SIZE + col)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_KING, i, (row + j) * BOARD_SIZE + col));
-				}
-
-				// moving down
-				for (int j = 1; j <= row; j++) {
-					if (invalid.get((row - j) * BOARD_SIZE + col)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_KING, i, (row - j) * BOARD_SIZE + col));
 				}
 			}
 
@@ -580,7 +583,7 @@ public class MILTState {
 
 	public int evaluation() {
 		int result = 0;
-		if (escapes.intersects(king)) {
+		if (escapes.intersects(king) || blacks.isEmpty()) {
 			result = Integer.MAX_VALUE;
 		} else if (king.isEmpty()) {
 			result = Integer.MIN_VALUE;
