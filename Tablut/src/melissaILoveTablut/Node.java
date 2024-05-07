@@ -1,4 +1,4 @@
-package melissailoveyou.domain;
+package melissaILoveTablut;
 
 public record Node(MILTState startState,MILTAction actionDone) {
 	public boolean isTerminal() {

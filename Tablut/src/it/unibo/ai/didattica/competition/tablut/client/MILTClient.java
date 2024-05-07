@@ -5,15 +5,17 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
+import melissaILoveTablut.*;
 import it.unibo.ai.didattica.competition.tablut.domain.StateTablut;
 import it.unibo.ai.didattica.competition.tablut.domain.Game;
 import it.unibo.ai.didattica.competition.tablut.domain.GameAshtonTablut;
 import it.unibo.ai.didattica.competition.tablut.domain.GameModernTablut;
 import it.unibo.ai.didattica.competition.tablut.domain.GameTablut;
-import melissailoveyou.domain.*;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
 import it.unibo.ai.didattica.competition.tablut.domain.StateBrandub;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
@@ -46,25 +48,70 @@ public class MILTClient extends TablutClient {
 		this(player, "MelissaILoveTablut", 4, 60, "localhost");
 	}
 
-	private int minMax(MILTState state, int depth, boolean maximizer) {
+	private Entry<Integer, MILTAction> minMax(MILTState state, MILTAction actionDone, int depth, boolean maximizer) {
 
+		if (depth == 0) {
+			return Map.entry(state.evaluation(), actionDone);
+		}
+		int bestVal = maximizer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+		MILTAction bestAction = null;
+		for (MILTAction action : state.getAvailableActions()) {
+			MILTState newState = state.apply(action);
+			int newStateVal = minMax(newState, action, depth - 1, !maximizer).getKey();
+			if (maximizer) {
+				if (newStateVal >= bestVal) {
+					bestVal = newStateVal;
+					bestAction = action;
+				}
+			} else {
+				if (newStateVal <= bestVal) {
+					bestVal = newStateVal;
+					bestAction = action;
+				}
+
+			}
+
+		}
+		for(int i=0;i<3-depth;i++) {
+			System.out.print("\t");
+		}
+		System.out.println("evaluated "+bestAction+" value: "+bestVal);
+		return Map.entry(bestVal, bestAction);
+	}
+	
+	private Entry<Integer, List<MILTAction>> minMaxList(MILTState state, MILTAction actionDone, int depth, boolean maximizer) {
+
+		List<MILTAction> resultList=new ArrayList<>();
 		if (depth == 0 || state.isTerminal()) {
-			return state.evaluation();
+			return Map.entry(state.evaluation(), new ArrayList<MILTAction>());
 		}
-		if (maximizer) {
-			int value = Integer.MIN_VALUE;
-			for (MILTState child : state.getChildren()) {
-				value = Math.max(value, minMax(child, depth - 1, false));
-			}
-			return value;
-		} else {
-			int value = Integer.MAX_VALUE;
-			for (MILTState child : state.getChildren()) {
-				value = Math.min(value, minMax(child, depth - 1, true));
-			}
-			return value;
-		}
+		int bestVal = maximizer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+		MILTAction bestAction = null;
+		List<MILTAction> tail=new ArrayList<>();
+		for (MILTAction action : state.getAvailableActions()) {
+			MILTState newState = state.apply(action);
+			Entry<Integer, List<MILTAction>> result= minMaxList(newState, action, depth - 1, !maximizer);
+			
+			
+			if (maximizer) {
+				if (result.getKey() > bestVal || (result.getKey() == bestVal && (result.getValue().size()<tail.size() || resultList.size()==0)))  {
+					bestVal = result.getKey();
+					bestAction = action;
+					tail = result.getValue();
+				}
+			} else {
+				if (result.getKey() < bestVal || (result.getKey() == bestVal && (result.getValue().size()<tail.size() || resultList.size()==0))) {
+					bestVal = result.getKey();
+					bestAction = action;
+					tail = result.getValue();
+				}
 
+			}
+
+		}
+		resultList=tail;
+		resultList.add(0,bestAction);
+		return Map.entry(bestVal, resultList);
 	}
 
 	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
@@ -182,25 +229,12 @@ public class MILTClient extends TablutClient {
 						}
 					}
 					MILTState miltState = new MILTState(MILTState.Turn.WHITE, king, whites, blacks);
-					MILTAction choosen = null;
-					int maxEvaluation = -1;
-					int evaluation = -1;
-
-					try {
-						for (MILTAction miltAction : miltState.getAvailableActions()) {
-							System.out.println("evaluating " + miltAction.toAction().toString());
-							evaluation = minMax(miltState.apply(miltAction), 3, true);
-							System.out.println("evaluated "+evaluation+"\n");
-							if (evaluation > maxEvaluation) {
-								maxEvaluation = evaluation;
-								choosen = miltAction;
-							}
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+					Entry<Integer,List<MILTAction>> result=minMaxList(miltState,null,4,true);
+					MILTAction choosen = result.getValue().get(0);
+					int evaluation = result.getKey();
 
 					System.out.println("Mossa scelta: " + choosen.toString());
+					System.out.println("Valuate "+result.getValue());
 					try {
 						this.write(choosen.toAction());
 					} catch (ClassNotFoundException | IOException e) {
@@ -255,20 +289,13 @@ public class MILTClient extends TablutClient {
 							}
 						}
 					}
-					MILTState miltState = new MILTState(MILTState.Turn.WHITE, king, whites, blacks);
-					MILTAction choosen = null;
-					int maxEvaluation = -1;
-					int evaluation = -1;
-
-					for (MILTAction miltAction : miltState.getAvailableActions()) {
-						evaluation = minMax(miltState.apply(miltAction), 15, true);
-						if (evaluation > maxEvaluation) {
-							maxEvaluation = evaluation;
-							choosen = miltAction;
-						}
-					}
+					MILTState miltState = new MILTState(MILTState.Turn.BLACK, king, whites, blacks);
+					Entry<Integer,List<MILTAction>> result=minMaxList(miltState,null,4,false);
+					MILTAction choosen = result.getValue().get(0);
+					int evaluation = result.getKey();
 
 					System.out.println("Mossa scelta: " + choosen.toString());
+					System.out.println("Valuate "+result.getValue());
 					try {
 						this.write(choosen.toAction());
 					} catch (ClassNotFoundException | IOException e) {
