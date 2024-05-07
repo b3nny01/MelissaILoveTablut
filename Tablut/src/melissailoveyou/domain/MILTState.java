@@ -580,7 +580,7 @@ public class MILTState {
 
 	public int evaluation() {
 		int result = 0;
-		if (escapes.intersects(king)) {
+		if (escapes.intersects(king) || blacks.isEmpty()) {
 			result = Integer.MAX_VALUE;
 		} else if (king.isEmpty()) {
 			result = Integer.MIN_VALUE;

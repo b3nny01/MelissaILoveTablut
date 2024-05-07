@@ -2,7 +2,7 @@ package melissailoveyou.domain;
 
 import java.io.IOException;
 
-public record MILTAction(MILTState.PieceType pieceType,int from, int to) {
+public record MILTAction(MILTState.PieceType pieceType, int from, int to) {
     public it.unibo.ai.didattica.competition.tablut.domain.Action toAction() throws IOException{
     	
     	System.out.println("linearized: "+from+" "+to);
