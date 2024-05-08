@@ -24,5 +24,8 @@ public record MILTAction(MILTState.PieceType pieceType,int from, int to) {
         return new it.unibo.ai.didattica.competition.tablut.domain.Action(fromStr,toStr,turn);
     }
     
+    public MILTAction reversed() {
+    	return new MILTAction(pieceType,to,from);
+    }
     
 }

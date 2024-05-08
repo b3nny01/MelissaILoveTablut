@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import melissaILoveTablut.MILTState.Turn;
+
 public class MILTState {
 
 	public enum Turn {
@@ -39,6 +41,8 @@ public class MILTState {
 	}
 
 	public static final int BOARD_SIZE = 9;
+	
+	
 
 	private static BitSet initEscapes() {
 		BitSet result = new BitSet(BOARD_SIZE * BOARD_SIZE);
@@ -115,15 +119,38 @@ public class MILTState {
 		result.set(50);
 		return result;
 	};
+	
+	private static MILTState initInitialState() {
+		
+		// white setup
+		BitSet whites = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
+		whites.set(22);
+		whites.set(31);
+		whites.set(38);
+		whites.set(39);
+		whites.set(41);
+		whites.set(42);
+		whites.set(49);
+		whites.set(58);
+		
+		// black setup
+		BitSet blacks = initCamps();
+		
+		// king setup
+		BitSet king = initThrone();
+		
+		return new MILTState(Turn.WHITE,whites,blacks,king);
+	}
 
-	private static BitSet escapes = initEscapes();
-	private static BitSet camps = initCamps();
-	private static BitSet throne = initThrone();
-	private static BitSet aroundThrone = initAroundThrone();
-	private static BitSet aroundThroneSurroundedLeft = initAroundThroneSurroundedLeft();
-	private static BitSet aroundThroneSurroundedRight = initAroundThroneSurroundedRight();
-	private static BitSet aroundThroneSurroundedUp = initAroundThroneSurroundedUp();
-	private static BitSet aroundThroneSurroundedDown = initAroundThroneSurroundedDown();
+	public static final BitSet escapes = initEscapes();
+	public static final BitSet camps = initCamps();
+	public static final BitSet throne = initThrone();
+	public static final BitSet aroundThrone = initAroundThrone();
+	public static final BitSet aroundThroneSurroundedLeft = initAroundThroneSurroundedLeft();
+	public static final BitSet aroundThroneSurroundedRight = initAroundThroneSurroundedRight();
+	public static final BitSet aroundThroneSurroundedUp = initAroundThroneSurroundedUp();
+	public static final BitSet aroundThroneSurroundedDown = initAroundThroneSurroundedDown();
+	public static final MILTState initialState=initInitialState();
 
 	private Turn turn;
 	private BitSet king;

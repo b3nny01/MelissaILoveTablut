@@ -13,6 +13,7 @@
             <classpath>
                 <pathelement path="lib/gson-2.2.2.jar" />
                 <pathelement path="lib/commons-cli-1.4.jar" />
+            	<pathelement path="lib/aima-core-3.0.0.jar" />
             </classpath>
         </javac>
         <copy todir="build">
@@ -75,6 +76,7 @@
 	        <java classname="it.unibo.ai.didattica.competition.tablut.client.MILTWhiteClient" fork="true">
 	            <classpath>
 	                <pathelement location="lib/gson-2.2.2.jar"/>
+	            	<pathelement path="lib/aima-core-3.0.0.jar" />
 	                <pathelement location="build"/>
 	            </classpath>
 	        </java>
@@ -84,6 +86,7 @@
 	        <java classname="it.unibo.ai.didattica.competition.tablut.client.MILTBlackClient" fork="true">
 	            <classpath>
 	                <pathelement location="lib/gson-2.2.2.jar"/>
+	            	<pathelement path="lib/aima-core-3.0.0.jar" />
 	                <pathelement location="build"/>
 	            </classpath>
 	        </java>
