@@ -1,0 +1,13 @@
+clean
+compile
+gui-server
+humanblack
+humanwhite
+miltblack
+miltwhite
+random-jar
+randomblack
+randomwhite
+server
+server-jar
+tester
