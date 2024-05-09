@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+
 public class MILTState {
 
 	public enum Turn {
@@ -593,5 +594,191 @@ public class MILTState {
 
 		return result;
 	}
+	
+	
+	/* euristica:
+	 * 
+	 * BIANCHI:
+	 * 
+	 * - numero neri in un certo quadrante
+	 * - posizione e sicurezza del re
+	 * - possibilità di mangiare un nero
+	 * - sviluppo/cattura pedine avversarie
+	 * - colonne e righe favorevoli
+	 * 
+	 * 
+	 * NERI:
+	 * 
+	 * - neri nei campi/quadranti
+	 * - numero neri necessari a mangiare il re
+	 * - 
+	 * 
+	 * 
+	 * */
+	
+	
+	
+	
+	public List<MILTAction> getKingEscapes(MILTState state) {
+        
+		List<MILTAction> moves = new ArrayList<>(); 
 
+        if (!state.getKing().intersects(throne)) {
+        	List<MILTAction> actions = state.getAvailableActions();
+        	for (MILTAction a : actions) {
+        		if ((state.getKing().nextSetBit(0) == a.from()) && (escapes.get(a.to()))) {
+        			moves.add(a);
+        		}
+        	}
+            return moves;
+        }
+        return moves;
+    }
+	
+	
+	public int getKingMovements(MILTState state) {
+        int count = 4;
+
+        BitSet invalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		invalid.or(camps);
+		invalid.or(throne);
+		invalid.or(king);
+		invalid.or(whites);
+		invalid.or(blacks);
+		
+		int i = this.king.nextSetBit(0);
+        int row = this.king.nextSetBit(0) / BOARD_SIZE;
+		int col = this.king.nextSetBit(0) - row * BOARD_SIZE;
+
+		// moving right
+		if (invalid.get(i + 1)) {
+			count--;
+		}
+		// moving left
+		if (invalid.get(i - 1)) {
+			count--;
+		}
+		// moving up
+		if (invalid.get((row + 1) * BOARD_SIZE + col)) {
+			count--;
+		}
+		// moving down
+		if (invalid.get((row - 1) * BOARD_SIZE + col)) {
+			count--;
+		}
+
+        return count;
+    }
+	
+	
+	public boolean canKingBeCaptured(MILTState state) {
+		
+		//trono
+		if (state.getKing().intersects(throne)) {
+			BitSet aroundThroneAndBlacks = (BitSet) throne.clone();
+			aroundThroneAndBlacks.and(state.getBlacks());
+			if (aroundThroneAndBlacks.cardinality() == 3) {
+				return true;
+			}
+		}
+		
+		//attorno al trono
+		else if (state.getKing().intersects(aroundThrone)) {
+			
+			BitSet surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedLeft.clone();
+			surroundedThroneAndBlack.and(state.getBlacks());
+			if (surroundedThroneAndBlack.cardinality() == 2) {
+				return true;
+			}
+			
+			surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedRight.clone();
+			surroundedThroneAndBlack.and(state.getBlacks());
+			if (surroundedThroneAndBlack.cardinality() == 2) {
+				return true;
+			}
+			
+			surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedUp.clone();
+			surroundedThroneAndBlack.and(state.getBlacks());
+			if (surroundedThroneAndBlack.cardinality() == 2) {
+				return true;
+			}
+			
+			surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedDown.clone();
+			surroundedThroneAndBlack.and(state.getBlacks());
+			if (surroundedThroneAndBlack.cardinality() == 2) {
+				return true;
+			}
+		}
+		
+		//vicino barriera/campo + posizione generica
+		else {
+			if (checkRow(state.getKing()) || checkColumn(state.getKing()))
+				return true;
+		}
+		
+        return false;
+    }
+	
+	
+	public boolean canPawnBeCaptured(MILTState state, int position) {
+        
+		int row = position / BOARD_SIZE;
+		int col = position - row * BOARD_SIZE;
+		//vicino barriera/campo
+		//posizione generica
+		if (checkRow(state.getKing()) || checkColumn(state.getKing()))
+			return true;
+		
+    	return false;
+    }
+	
+	
+	private boolean checkRow(BitSet king) {
+		
+		int row = king.nextSetBit(0) / BOARD_SIZE;
+		int col = king.nextSetBit(0) - row * BOARD_SIZE;
+		
+		// capture left
+		if (col >= 2) {
+			if (this.getBlacks().get(row + BOARD_SIZE + col - 2)
+					|| camps.get(row * BOARD_SIZE + col - 2)) {
+				return true;
+			}
+		}
+
+		// capture right
+		if (col < BOARD_SIZE - 2) {
+			if (this.getBlacks().get(row + BOARD_SIZE + col + 2)
+					|| camps.get(row * BOARD_SIZE + col + 2)) {
+				return true;
+			}
+
+		}
+		
+		return false;
+	}
+	
+	private boolean checkColumn(BitSet king) {
+		
+		int row = king.nextSetBit(0) / BOARD_SIZE;
+		int col = king.nextSetBit(0) - row * BOARD_SIZE;
+		
+		// capture up
+		if (row >= 2) {
+			if (this.getBlacks().get((row - 2) * BOARD_SIZE + col)
+					|| camps.get((row - 2) * BOARD_SIZE + col)) {
+				return true;
+			}
+		}
+
+		// capture down
+		if (row < BOARD_SIZE - 2) {
+			if (this.getBlacks().get((row + 2) * BOARD_SIZE + col)
+					|| camps.get((row + 2) * BOARD_SIZE + col)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }

@@ -16,7 +16,7 @@ public record MILTAction(MILTState.PieceType pieceType, int from, int to) {
         String toStr=Character.toString((char)('a'+col))+row;
         
 
-        it.unibo.ai.didattica.competition.tablut.domain.StateTablut.Turn turn=switch(pieceType){
+        it.unibo.ai.didattica.competition.tablut.domain.StateTablut.Turn turn=switch(pieceType) {
             case BLACK_PAWN-> it.unibo.ai.didattica.competition.tablut.domain.StateTablut.Turn.BLACK;
             default -> it.unibo.ai.didattica.competition.tablut.domain.StateTablut.Turn.WHITE;
         };
