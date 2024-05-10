@@ -171,7 +171,6 @@ public class MILTState {
 	}
 
 	public static final BitSet escapes = initEscapes();
-
 	public static final BitSet campLeft = initCampLeft();
 	public static final BitSet campRight = initCampRight();
 	public static final BitSet campUp = initCampUp();
@@ -189,6 +188,333 @@ public class MILTState {
 	private BitSet king;
 	private BitSet whites;
 	private BitSet blacks;
+	private List<MILTAction> availableActions;
+	private int whitePawnsThreatened;
+	private int blackPawnsThreatened;
+	private boolean kingThreatened;
+
+	private boolean checkKingThreatened(int row, int col) {
+		return false;
+	}
+
+	private boolean isBlackThreatened(int pos, int row, int col) {
+		if (camps.get((row * BOARD_SIZE) + col)) {
+			return false;
+		}
+		int newPos = -1;
+		// right threat
+		if (col > 0) {
+			if (whites.get(pos - 1) || king.get(pos - 1) || camps.get(pos - 1) || throne.get(pos - 1)) {
+				for (int j = 2; j < BOARD_SIZE - col; j++) {
+					newPos = pos + j;
+					if (blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
+						break;
+					} else if (whites.get(newPos) || king.get(newPos)) {
+						return true;
+					}
+				}
+			}
+		}
+		// left threat
+		if (col < BOARD_SIZE - 1) {
+			if (whites.get(pos + 1) || king.get(pos + 1) || camps.get(pos + 1) || throne.get(pos + 1)) {
+				for (int j = 2; j <= col; j++) {
+					newPos = pos - j;
+					if (blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
+						break;
+					} else if (whites.get(newPos) || king.get(newPos)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		// down threat
+		if (row > 0) {
+			if (whites.get(pos - BOARD_SIZE) || king.get(pos - BOARD_SIZE) || camps.get(pos - BOARD_SIZE)
+					|| throne.get(pos - BOARD_SIZE)) {
+				for (int j = 2; j < BOARD_SIZE - row; j++) {
+					newPos = (row + j) * BOARD_SIZE + col;
+					if (blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
+						break;
+					} else if (whites.get(newPos) || king.get(newPos)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		// up threat
+		if (row < BOARD_SIZE - 1) {
+			if (whites.get(pos + BOARD_SIZE) || king.get(pos + BOARD_SIZE) || camps.get(pos + BOARD_SIZE)
+					|| throne.get(pos + BOARD_SIZE)) {
+				for (int j = 2; j <= row; j++) {
+					newPos = (row - j) * BOARD_SIZE + col;
+					if (blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
+						break;
+					} else if (whites.get(newPos) || king.get(newPos)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private boolean isWhiteThreatened(int pos, int row, int col) {
+		int newPos = -1;
+		// right threat
+		if (col > 0) {
+			if (blacks.get(pos - 1) || camps.get(pos - 1) || throne.get(pos - 1)) {
+				for (int j = 2; j < BOARD_SIZE - col; j++) {
+					newPos = pos + j;
+					if (whites.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
+						break;
+					} else if (blacks.get(newPos)) {
+						return true;
+					}
+				}
+			}
+		}
+		// left threat
+		if (col < BOARD_SIZE - 1) {
+			if (blacks.get(pos + 1) || camps.get(pos + 1) || throne.get(pos + 1)) {
+				for (int j = 2; j <= col; j++) {
+					newPos = pos - j;
+					if (whites.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
+						break;
+					} else if (blacks.get(newPos)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		// down threat
+		if (row > 0) {
+			if (blacks.get(pos - BOARD_SIZE) || camps.get(pos - BOARD_SIZE) || throne.get(pos - BOARD_SIZE)) {
+				for (int j = 2; j < BOARD_SIZE - row; j++) {
+					newPos = (row + j) * BOARD_SIZE + col;
+					if (whites.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
+						break;
+					} else if (blacks.get(newPos)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		// up threat
+		if (row < BOARD_SIZE - 1) {
+			if (blacks.get(pos + BOARD_SIZE) || camps.get(pos + BOARD_SIZE) || throne.get(pos + BOARD_SIZE)) {
+				for (int j = 2; j <= row; j++) {
+					newPos = (row - j) * BOARD_SIZE + col;
+					if (whites.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
+						break;
+					} else if (blacks.get(newPos)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private void initAvaliableActionsAndStats() {
+		this.availableActions = new ArrayList<>();
+		this.whitePawnsThreatened = 0;
+		this.blackPawnsThreatened = 0;
+
+		int i = -1;
+		int row = -1;
+		int col = -1;
+		int newPos = -1;
+
+		BitSet whiteInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		whiteInvalid.or(throne);
+		whiteInvalid.or(king);
+		whiteInvalid.or(whites);
+		whiteInvalid.or(camps);
+		whiteInvalid.or(blacks);
+
+		BitSet blackBaseInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		blackBaseInvalid.or(throne);
+		blackBaseInvalid.or(king);
+		blackBaseInvalid.or(whites);
+
+		BitSet blackInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
+
+		if (turn == Turn.WHITE) {
+			// king
+			i = this.king.nextSetBit(0);
+			if (i >= 0) {
+				row = i / BOARD_SIZE;
+				col = i - row * BOARD_SIZE;
+
+				// moving right
+				for (int j = 1; j < BOARD_SIZE - col; j++) {
+					newPos = i + j;
+					if (whiteInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.WHITE_KING, i, newPos));
+				}
+
+				// moving left
+				for (int j = 1; j <= col; j++) {
+					newPos = i - j;
+					if (whiteInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.WHITE_KING, i, newPos));
+				}
+
+				// moving down
+				for (int j = 1; j < BOARD_SIZE - row; j++) {
+					newPos = (row + j) * BOARD_SIZE + col;
+					if (whiteInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.WHITE_KING, i, newPos));
+				}
+
+				// moving up
+				for (int j = 1; j <= row; j++) {
+					newPos = (row - j) * BOARD_SIZE + col;
+					if (whiteInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.WHITE_KING, i, newPos));
+				}
+			}
+
+			// white pawns
+			for (i = whites.nextSetBit(0); i >= 0; i = whites.nextSetBit(i + 1)) {
+				if (i == Integer.MAX_VALUE) {
+					break;
+				}
+				row = i / BOARD_SIZE;
+				col = i - row * BOARD_SIZE;
+				
+				if(isWhiteThreatened(i,row,col)) {
+					whitePawnsThreatened++;
+				}
+
+				// moving right
+				for (int j = 1; j < BOARD_SIZE - col; j++) {
+					newPos = i + j;
+					if (whiteInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.WHITE_PAWN, i, newPos));
+				}
+
+				// moving left
+				for (int j = 1; j <= col; j++) {
+					newPos = i - j;
+					if (whiteInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.WHITE_PAWN, i, newPos));
+				}
+
+				// moving down
+				for (int j = 1; j < BOARD_SIZE - row; j++) {
+					newPos = (row + j) * BOARD_SIZE + col;
+					if (whiteInvalid.get(newPos)) {
+						// check threat up
+						if (j < BOARD_SIZE - row - 1 && blacks.get(newPos) && (!camps.get(newPos))) {
+							if (whites.get(newPos - BOARD_SIZE) || camps.get(newPos - BOARD_SIZE)
+									|| throne.get(newPos - BOARD_SIZE) || king.get(newPos - BOARD_SIZE)) {
+								whitePawnsThreatened++;
+							}
+						}
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.WHITE_PAWN, i, newPos));
+				}
+
+				// moving up
+				for (int j = 1; j <= row; j++) {
+					newPos = (row - j) * BOARD_SIZE + col;
+					if (whiteInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.WHITE_PAWN, i, newPos));
+				}
+			}
+
+		} else {
+
+			// black pawns
+			for (i = blacks.nextSetBit(0); i >= 0; i = blacks.nextSetBit(i + 1)) {
+				if (i == Integer.MAX_VALUE) {
+					break;
+				}
+				row = i / BOARD_SIZE;
+				col = i - row * BOARD_SIZE;
+				if(isBlackThreatened(i,row,col)) {
+					blackPawnsThreatened++;
+				}
+
+				// restore blackInvalid bitboard
+				blackInvalid.clear();
+				blackInvalid.or(blackBaseInvalid);
+				blackInvalid.or(camps);
+				// if startPos is inside a camp set that camp's positions to valid
+				if (campRight.get(i)) {
+					blackInvalid.xor(campRight);
+				} else if (campLeft.get(i)) {
+					blackInvalid.xor(campLeft);
+				} else if (campUp.get(i)) {
+					blackInvalid.xor(campUp);
+				} else if (campDown.get(i)) {
+					blackInvalid.xor(campDown);
+				}
+				// else set every camp's position to invalid
+				blackInvalid.or(blacks);
+
+				// moving right
+				for (int j = 1; j < BOARD_SIZE - col; j++) {
+					newPos = i + j;
+					if (blackInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.BLACK_PAWN, i, i + j));
+				}
+
+				// moving left
+				for (int j = 1; j <= col; j++) {
+					newPos = i - j;
+					if (blackInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.BLACK_PAWN, i, newPos));
+				}
+
+				// moving down
+				for (int j = 1; j < BOARD_SIZE - row; j++) {
+					newPos = (row + j) * BOARD_SIZE + col;
+					if (blackInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.BLACK_PAWN, i, newPos));
+				}
+
+				// moving up
+				for (int j = 1; j <= row; j++) {
+					newPos = (row - j) * BOARD_SIZE + col;
+					if (blackInvalid.get(newPos)) {
+						break;
+					}
+					availableActions.add(new MILTAction(PieceType.BLACK_PAWN, i, newPos));
+				}
+			}
+
+		}
+	}
 
 	public MILTState(Turn turn, BitSet king, BitSet whites, BitSet blacks) {
 		super();
@@ -196,6 +522,8 @@ public class MILTState {
 		this.king = king;
 		this.whites = whites;
 		this.blacks = blacks;
+		this.initAvaliableActionsAndStats();
+
 	}
 
 	public Turn getTurn() {
@@ -228,6 +556,24 @@ public class MILTState {
 
 	public void setBlacks(BitSet blacks) {
 		this.blacks = blacks;
+	}
+	
+	
+
+	public int getWhitePawnsThreatened() {
+		return whitePawnsThreatened;
+	}
+
+	public void setWhitePawnsThreatened(int whitePawnsThreatened) {
+		this.whitePawnsThreatened = whitePawnsThreatened;
+	}
+
+	public int getBlackPawnsThreatened() {
+		return blackPawnsThreatened;
+	}
+
+	public void setBlackPawnsThreatened(int blackPawnsThreatened) {
+		this.blackPawnsThreatened = blackPawnsThreatened;
 	}
 
 	public MILTState apply(MILTAction action) {
@@ -489,177 +835,7 @@ public class MILTState {
 	}
 
 	public List<MILTAction> getAvailableActions() {
-		List<MILTAction> actions = new ArrayList<>();
-		int i = -1;
-		int row = -1;
-		int col = -1;
-
-		BitSet whiteInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
-		whiteInvalid.or(throne);
-		whiteInvalid.or(king);
-		whiteInvalid.or(whites);
-		whiteInvalid.or(camps);
-		whiteInvalid.or(blacks);
-
-		BitSet blackBaseInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
-		blackBaseInvalid.or(throne);
-		blackBaseInvalid.or(king);
-		blackBaseInvalid.or(whites);
-
-		BitSet blackInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
-
-		if (turn == Turn.WHITE) {
-			// king
-			i = this.king.nextSetBit(0);
-			if (i >= 0) {
-				row = i / BOARD_SIZE;
-				col = i - row * BOARD_SIZE;
-
-				// moving right
-				for (int j = 1; j < BOARD_SIZE - col; j++) {
-					if (whiteInvalid.get(i + j)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_KING, i, i + j));
-				}
-
-				// moving left
-				for (int j = 1; j <= col; j++) {
-					if (whiteInvalid.get(i - j)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_KING, i, i - j));
-				}
-
-				// moving up
-				for (int j = 1; j < BOARD_SIZE - row; j++) {
-					if (whiteInvalid.get((row + j) * BOARD_SIZE + col)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_KING, i, (row + j) * BOARD_SIZE + col));
-				}
-
-				// moving down
-				for (int j = 1; j <= row; j++) {
-					if (whiteInvalid.get((row - j) * BOARD_SIZE + col)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_KING, i, (row - j) * BOARD_SIZE + col));
-				}
-			}
-
-			// white pawns
-			for (i = whites.nextSetBit(0); i >= 0; i = whites.nextSetBit(i + 1)) {
-				if (i == Integer.MAX_VALUE) {
-					break;
-				}
-				row = i / BOARD_SIZE;
-				col = i - row * BOARD_SIZE;
-
-				// moving right
-				for (int j = 1; j < BOARD_SIZE - col; j++) {
-					if (whiteInvalid.get(i + j)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_PAWN, i, i + j));
-				}
-
-				// moving left
-				for (int j = 1; j <= col; j++) {
-					if (whiteInvalid.get(i - j)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_PAWN, i, i - j));
-				}
-
-				// moving up
-				for (int j = 1; j < BOARD_SIZE - row; j++) {
-					if (whiteInvalid.get((row + j) * BOARD_SIZE + col)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_PAWN, i, (row + j) * BOARD_SIZE + col));
-				}
-
-				// moving down
-				for (int j = 1; j <= row; j++) {
-					if (whiteInvalid.get((row - j) * BOARD_SIZE + col)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.WHITE_PAWN, i, (row - j) * BOARD_SIZE + col));
-				}
-			}
-
-		} else {
-
-			// black pawns
-			for (i = blacks.nextSetBit(0); i >= 0; i = blacks.nextSetBit(i + 1)) {
-				if (i == Integer.MAX_VALUE) {
-					break;
-				}
-				row = i / BOARD_SIZE;
-				col = i - row * BOARD_SIZE;
-
-				// restore blackInvalid bitboard
-				blackInvalid.clear();
-				blackInvalid.or(blackBaseInvalid);
-				blackInvalid.or(camps);
-				// if startPos is inside a camp set that camp's positions to valid
-				if (campRight.get(i)) {
-					blackInvalid.xor(campRight);
-				} else if (campLeft.get(i)) {
-					blackInvalid.xor(campLeft);
-				} else if (campUp.get(i)) {
-					blackInvalid.xor(campUp);
-				} else if (campDown.get(i)) {
-					blackInvalid.xor(campDown);
-				}
-				// else set every camp's position to invalid
-				blackInvalid.or(blacks);
-
-				// moving right
-				for (int j = 1; j < BOARD_SIZE - col; j++) {
-					if (blackInvalid.get(i + j)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.BLACK_PAWN, i, i + j));
-				}
-
-				// moving left
-				for (int j = 1; j <= col; j++) {
-					if (blackInvalid.get(i - j)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.BLACK_PAWN, i, i - j));
-				}
-
-				// moving up
-				for (int j = 1; j < BOARD_SIZE - row; j++) {
-					if (blackInvalid.get((row + j) * BOARD_SIZE + col)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.BLACK_PAWN, i, (row + j) * BOARD_SIZE + col));
-				}
-
-				// moving down
-				for (int j = 1; j <= row; j++) {
-					if (blackInvalid.get((row - j) * BOARD_SIZE + col)) {
-						break;
-					}
-					actions.add(new MILTAction(PieceType.BLACK_PAWN, i, (row - j) * BOARD_SIZE + col));
-				}
-			}
-
-		}
-		return actions;
-	}
-
-	public List<MILTState> getChildren() {
-		List<MILTState> result = new ArrayList<>();
-		List<MILTAction> actions = this.getAvailableActions();
-		for (MILTAction a : actions) {
-			result.add(this.apply(a));
-		}
-		return result;
+		return this.availableActions;
 	}
 
 	public boolean isTerminal() {
