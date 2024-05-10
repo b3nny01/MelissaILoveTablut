@@ -712,7 +712,7 @@ public class MILTState {
 		
 		//vicino barriera/campo + posizione generica
 		else {
-			if (checkRow(state.getKing()) || checkColumn(state.getKing()))
+			if (checkRow(state.getKing().nextSetBit(0)) || checkColumn(state.getKing().nextSetBit(0)))
 				return true;
 		}
 		
@@ -720,23 +720,54 @@ public class MILTState {
     }
 	
 	
-	public boolean canPawnBeCaptured(MILTState state, int position) {
-        
-		int row = position / BOARD_SIZE;
-		int col = position - row * BOARD_SIZE;
-		//vicino barriera/campo
-		//posizione generica
-		if (checkRow(state.getKing()) || checkColumn(state.getKing()))
+	public boolean canPawnBeCaptured(int position) {
+		
+		//vicino barriera/campo + posizione generica
+		if (checkRow(position) || checkColumn(position))
 			return true;
 		
     	return false;
     }
 	
 	
-	private boolean checkRow(BitSet king) {
+	public int getPawnsMovements(int position) {
+		int count = 4;
+
+        BitSet invalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		invalid.or(camps);
+		invalid.or(throne);
+		invalid.or(king);
+		invalid.or(whites);
+		invalid.or(blacks);
 		
-		int row = king.nextSetBit(0) / BOARD_SIZE;
-		int col = king.nextSetBit(0) - row * BOARD_SIZE;
+        int row = position / BOARD_SIZE;
+		int col = position - row * BOARD_SIZE;
+
+		// moving right
+		if (invalid.get(position + 1)) {
+			count--;
+		}
+		// moving left
+		if (invalid.get(position - 1)) {
+			count--;
+		}
+		// moving up
+		if (invalid.get((row + 1) * BOARD_SIZE + col)) {
+			count--;
+		}
+		// moving down
+		if (invalid.get((row - 1) * BOARD_SIZE + col)) {
+			count--;
+		}
+
+        return count;
+	}
+	
+	
+	private boolean checkRow(int position) {
+		
+		int row = position / BOARD_SIZE;
+		int col = position - row * BOARD_SIZE;
 		
 		// capture left
 		if (col >= 2) {
@@ -758,10 +789,11 @@ public class MILTState {
 		return false;
 	}
 	
-	private boolean checkColumn(BitSet king) {
+	
+	private boolean checkColumn(int position) {
 		
-		int row = king.nextSetBit(0) / BOARD_SIZE;
-		int col = king.nextSetBit(0) - row * BOARD_SIZE;
+		int row = position / BOARD_SIZE;
+		int col = position - row * BOARD_SIZE;
 		
 		// capture up
 		if (row >= 2) {

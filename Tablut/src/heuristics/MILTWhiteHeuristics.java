@@ -15,18 +15,20 @@ public class MILTWhiteHeuristics {
 	private final int WHITE_ALIVE = 0; 
     private final int BLACK_ALIVE = 1;
     private final int KING_SAFE = 2;
-    private final int WHITE_MOVEMENT = 3;
+    private final int WHITE_SAFE = 3;
+    private final int WHITE_MOVEMENT = 4;
 
     private final Double[] gameWeights;
 
     public MILTWhiteHeuristics(MILTState state) {
         this.state = state;
 
-        gameWeights = new Double[4];
+        gameWeights = new Double[5];
 
         gameWeights[WHITE_ALIVE] = 10.0;
         gameWeights[BLACK_ALIVE] = 10.0;
         gameWeights[KING_SAFE] = 10.0;
+        gameWeights[WHITE_SAFE] = 10.0;
         gameWeights[WHITE_MOVEMENT] = 10.0;
     }
     
@@ -46,14 +48,16 @@ public class MILTWhiteHeuristics {
 
         double kingMov = evalKingMovement();
         double kingEsc = evalKingEscapes(state);
-        double pawnsMov = getPawnsMovement();
+        double pawnsSafety = evalPawnsSafety();
+        double pawnsMov = evalPawnsMovement();
 
         stateValue += whitesAlive * gameWeights[WHITE_ALIVE];
-        stateValue += blacksAlive * gameWeights[BLACK_ALIVE];
+        stateValue -= blacksAlive * gameWeights[BLACK_ALIVE];
 
         stateValue += (kingEsc + kingMov) * gameWeights[KING_SAFE];
+        stateValue += pawnsSafety * gameWeights[WHITE_SAFE];
 
-        stateValue += pawnsMov * gameWeights[WHITE_MOVEMENT];
+        stateValue += (pawnsMov / whitePawns) * gameWeights[WHITE_MOVEMENT];
 
         return stateValue;
     }
@@ -70,16 +74,33 @@ public class MILTWhiteHeuristics {
     }
     
     
-    private int getPawnsMovement() {
+    private int evalPawnsSafety() {
         int safe = 0;
+        int j = 0;
         
         //TO DO: aggiungere pesi per le righe e le colonne favorevoli
         BitSet board = state.getWhites();
         for (int i = 0; i < board.cardinality(); i++) {    
-        	safe += state.canPawnBeCaptured(state, i) ? 0 : 1;
+        	safe += state.canPawnBeCaptured(board.nextSetBit(j)) ? 0 : 1;
+        	j = board.nextSetBit(j);
         }
 
         return safe;
+    }
+    
+    
+    private int evalPawnsMovement() {
+    	int mov = 0;
+    	int j = 0;
+        
+        //TO DO: aggiungere pesi per le righe e le colonne favorevoli
+        BitSet board = state.getWhites();
+        for (int i = 0; i < board.cardinality(); i++) {    
+        	mov += state.getPawnsMovements(board.nextSetBit(j));
+        	j = board.nextSetBit(j);
+        }
+    	
+    	return mov;
     }
     
     
@@ -88,40 +109,14 @@ public class MILTWhiteHeuristics {
         int numEsc = escapes.size();
         
         if (!state.canKingBeCaptured(state)) {
-        	if (numEsc > 1 && !state.canKingBeCaptured(state))
+        	if (numEsc > 1)
             return Double.POSITIVE_INFINITY;
 
 	        // check if an enemy can block an escape
 	        else if (numEsc == 1) {
-	        	MILTAction action = escapes.get(0);
-	        	int end = action.to();
-	            // Up escape
-	            if (end < 8) {
-	                //check
-	            	//return 0.0;
-	                return 10.0;
-	            }
-	            // Down escape
-	            if (end > 72) {
-	                //check
-	            	//return 0.0;
-	                return 10.0;
-	            }
-	            // Left escape
-	            if (end == 8 || end == 18 || end == 54 || end == 63) {
-	                //check
-	            	//return 0.0;
-	                return 10.0;
-	            }
-	            // Right escape
-	            if (end == 17 || end == 26 || end == 62 || end == 71) {
-	                //check
-	            	//return 0.0;
-	                return 10.0;
-	            }
+	        	return 10.0;
         	}
         }
-        
         return 0.0;
     }
 }
