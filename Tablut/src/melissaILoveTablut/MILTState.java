@@ -601,36 +601,20 @@ public class MILTState {
 
 				// restore blackInvalid bitboard
 				blackInvalid.clear();
+				blackInvalid.or(blackBaseInvalid);
+				blackInvalid.or(camps);
 				// if startPos is inside a camp set that camp's positions to valid
 				if (campRight.get(i)) {
-					blackInvalid.or(blackBaseInvalid);
-					blackInvalid.or(camps);
 					blackInvalid.xor(campRight);
-					blackInvalid.or(blacks);
-
 				} else if (campLeft.get(i)) {
-					blackInvalid.or(blackBaseInvalid);
-					blackInvalid.or(camps);
 					blackInvalid.xor(campLeft);
-					blackInvalid.or(blacks);
 				} else if (campUp.get(i)) {
-					blackInvalid.or(blackBaseInvalid);
-					blackInvalid.or(camps);
 					blackInvalid.xor(campUp);
-					blackInvalid.or(blacks);
 				} else if (campDown.get(i)) {
-					blackInvalid.or(blackBaseInvalid);
-					blackInvalid.or(camps);
 					blackInvalid.xor(campDown);
-					blackInvalid.or(blacks);
 				}
 				// else set every camp's position to invalid
-				else {
-					blackInvalid.or(blackBaseInvalid);
-					blackInvalid.or(camps);
-					blackInvalid.or(blacks);
-
-				}
+				blackInvalid.or(blacks);
 
 				// moving right
 				for (int j = 1; j < BOARD_SIZE - col; j++) {
