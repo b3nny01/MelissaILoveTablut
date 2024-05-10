@@ -41,8 +41,6 @@ public class MILTState {
 	}
 
 	public static final int BOARD_SIZE = 9;
-	
-	
 
 	private static BitSet initEscapes() {
 		BitSet result = new BitSet(BOARD_SIZE * BOARD_SIZE);
@@ -58,6 +56,36 @@ public class MILTState {
 		result.set(78, 80);
 		return result;
 
+	}
+
+	private static BitSet initCampLeft() {
+		BitSet result = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		result.set(27);
+		result.set(36, 48);
+		result.set(45);
+		return result;
+	}
+
+	private static BitSet initCampRight() {
+		BitSet result = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		result.set(35);
+		result.set(43, 45);
+		result.set(53);
+		return result;
+	}
+
+	private static BitSet initCampUp() {
+		BitSet result = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		result.set(3, 6);
+		result.set(13);
+		return result;
+	}
+
+	private static BitSet initCampDown() {
+		BitSet result = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		result.set(67);
+		result.set(75, 78);
+		return result;
 	}
 
 	private static BitSet initCamps() {
@@ -119,9 +147,9 @@ public class MILTState {
 		result.set(50);
 		return result;
 	};
-	
+
 	private static MILTState initInitialState() {
-		
+
 		// white setup
 		BitSet whites = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
 		whites.set(22);
@@ -132,17 +160,22 @@ public class MILTState {
 		whites.set(42);
 		whites.set(49);
 		whites.set(58);
-		
+
 		// black setup
 		BitSet blacks = initCamps();
-		
+
 		// king setup
 		BitSet king = initThrone();
-		
-		return new MILTState(Turn.WHITE,whites,blacks,king);
+
+		return new MILTState(Turn.WHITE, whites, blacks, king);
 	}
 
 	public static final BitSet escapes = initEscapes();
+
+	public static final BitSet campLeft = initCampLeft();
+	public static final BitSet campRight = initCampRight();
+	public static final BitSet campUp = initCampUp();
+	public static final BitSet campDown = initCampDown();
 	public static final BitSet camps = initCamps();
 	public static final BitSet throne = initThrone();
 	public static final BitSet aroundThrone = initAroundThrone();
@@ -150,7 +183,7 @@ public class MILTState {
 	public static final BitSet aroundThroneSurroundedRight = initAroundThroneSurroundedRight();
 	public static final BitSet aroundThroneSurroundedUp = initAroundThroneSurroundedUp();
 	public static final BitSet aroundThroneSurroundedDown = initAroundThroneSurroundedDown();
-	public static final MILTState initialState=initInitialState();
+	public static final MILTState initialState = initInitialState();
 
 	private Turn turn;
 	private BitSet king;
@@ -461,12 +494,19 @@ public class MILTState {
 		int row = -1;
 		int col = -1;
 
-		BitSet invalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
-		invalid.or(camps);
-		invalid.or(throne);
-		invalid.or(king);
-		invalid.or(whites);
-		invalid.or(blacks);
+		BitSet whiteInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		whiteInvalid.or(throne);
+		whiteInvalid.or(king);
+		whiteInvalid.or(whites);
+		whiteInvalid.or(camps);
+		whiteInvalid.or(blacks);
+
+		BitSet blackBaseInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		blackBaseInvalid.or(throne);
+		blackBaseInvalid.or(king);
+		blackBaseInvalid.or(whites);
+
+		BitSet blackInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
 
 		if (turn == Turn.WHITE) {
 			// king
@@ -477,7 +517,7 @@ public class MILTState {
 
 				// moving right
 				for (int j = 1; j < BOARD_SIZE - col; j++) {
-					if (invalid.get(i + j)) {
+					if (whiteInvalid.get(i + j)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.WHITE_KING, i, i + j));
@@ -485,7 +525,7 @@ public class MILTState {
 
 				// moving left
 				for (int j = 1; j <= col; j++) {
-					if (invalid.get(i - j)) {
+					if (whiteInvalid.get(i - j)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.WHITE_KING, i, i - j));
@@ -493,7 +533,7 @@ public class MILTState {
 
 				// moving up
 				for (int j = 1; j < BOARD_SIZE - row; j++) {
-					if (invalid.get((row + j) * BOARD_SIZE + col)) {
+					if (whiteInvalid.get((row + j) * BOARD_SIZE + col)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.WHITE_KING, i, (row + j) * BOARD_SIZE + col));
@@ -501,7 +541,7 @@ public class MILTState {
 
 				// moving down
 				for (int j = 1; j <= row; j++) {
-					if (invalid.get((row - j) * BOARD_SIZE + col)) {
+					if (whiteInvalid.get((row - j) * BOARD_SIZE + col)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.WHITE_KING, i, (row - j) * BOARD_SIZE + col));
@@ -518,7 +558,7 @@ public class MILTState {
 
 				// moving right
 				for (int j = 1; j < BOARD_SIZE - col; j++) {
-					if (invalid.get(i + j)) {
+					if (whiteInvalid.get(i + j)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.WHITE_PAWN, i, i + j));
@@ -526,7 +566,7 @@ public class MILTState {
 
 				// moving left
 				for (int j = 1; j <= col; j++) {
-					if (invalid.get(i - j)) {
+					if (whiteInvalid.get(i - j)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.WHITE_PAWN, i, i - j));
@@ -534,7 +574,7 @@ public class MILTState {
 
 				// moving up
 				for (int j = 1; j < BOARD_SIZE - row; j++) {
-					if (invalid.get((row + j) * BOARD_SIZE + col)) {
+					if (whiteInvalid.get((row + j) * BOARD_SIZE + col)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.WHITE_PAWN, i, (row + j) * BOARD_SIZE + col));
@@ -542,7 +582,7 @@ public class MILTState {
 
 				// moving down
 				for (int j = 1; j <= row; j++) {
-					if (invalid.get((row - j) * BOARD_SIZE + col)) {
+					if (whiteInvalid.get((row - j) * BOARD_SIZE + col)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.WHITE_PAWN, i, (row - j) * BOARD_SIZE + col));
@@ -550,6 +590,7 @@ public class MILTState {
 			}
 
 		} else {
+
 			// black pawns
 			for (i = blacks.nextSetBit(0); i >= 0; i = blacks.nextSetBit(i + 1)) {
 				if (i == Integer.MAX_VALUE) {
@@ -558,9 +599,42 @@ public class MILTState {
 				row = i / BOARD_SIZE;
 				col = i - row * BOARD_SIZE;
 
+				// restore blackInvalid bitboard
+				blackInvalid.clear();
+				// if startPos is inside a camp set that camp's positions to valid
+				if (campRight.get(i)) {
+					blackInvalid.or(blackBaseInvalid);
+					blackInvalid.or(camps);
+					blackInvalid.xor(campRight);
+					blackInvalid.or(blacks);
+
+				} else if (campLeft.get(i)) {
+					blackInvalid.or(blackBaseInvalid);
+					blackInvalid.or(camps);
+					blackInvalid.xor(campLeft);
+					blackInvalid.or(blacks);
+				} else if (campUp.get(i)) {
+					blackInvalid.or(blackBaseInvalid);
+					blackInvalid.or(camps);
+					blackInvalid.xor(campUp);
+					blackInvalid.or(blacks);
+				} else if (campDown.get(i)) {
+					blackInvalid.or(blackBaseInvalid);
+					blackInvalid.or(camps);
+					blackInvalid.xor(campDown);
+					blackInvalid.or(blacks);
+				}
+				// else set every camp's position to invalid
+				else {
+					blackInvalid.or(blackBaseInvalid);
+					blackInvalid.or(camps);
+					blackInvalid.or(blacks);
+
+				}
+
 				// moving right
 				for (int j = 1; j < BOARD_SIZE - col; j++) {
-					if (invalid.get(i + j)) {
+					if (blackInvalid.get(i + j)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.BLACK_PAWN, i, i + j));
@@ -568,7 +642,7 @@ public class MILTState {
 
 				// moving left
 				for (int j = 1; j <= col; j++) {
-					if (invalid.get(i - j)) {
+					if (blackInvalid.get(i - j)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.BLACK_PAWN, i, i - j));
@@ -576,7 +650,7 @@ public class MILTState {
 
 				// moving up
 				for (int j = 1; j < BOARD_SIZE - row; j++) {
-					if (invalid.get((row + j) * BOARD_SIZE + col)) {
+					if (blackInvalid.get((row + j) * BOARD_SIZE + col)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.BLACK_PAWN, i, (row + j) * BOARD_SIZE + col));
@@ -584,7 +658,7 @@ public class MILTState {
 
 				// moving down
 				for (int j = 1; j <= row; j++) {
-					if (invalid.get((row - j) * BOARD_SIZE + col)) {
+					if (blackInvalid.get((row - j) * BOARD_SIZE + col)) {
 						break;
 					}
 					actions.add(new MILTAction(PieceType.BLACK_PAWN, i, (row - j) * BOARD_SIZE + col));
