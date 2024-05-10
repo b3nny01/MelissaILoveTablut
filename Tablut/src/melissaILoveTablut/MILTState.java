@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import heuristics.MILTBlackHeuristics;
+import heuristics.MILTWhiteHeuristics;
 import melissaILoveTablut.MILTState.Turn;
 
 public class MILTState {
@@ -194,6 +196,96 @@ public class MILTState {
 	private boolean kingThreatened;
 
 	private boolean checkKingThreatened(int row, int col) {
+
+		// trono
+		if (this.king.intersects(throne)) {
+			BitSet aroundThroneAndBlacks = (BitSet) throne.clone();
+			aroundThroneAndBlacks.and(this.blacks);
+			if (aroundThroneAndBlacks.cardinality() == 3) {
+				return true;
+			}
+		}
+
+		// attorno al trono
+		else if (this.king.intersects(aroundThrone)) {
+
+			BitSet surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedLeft.clone();
+			surroundedThroneAndBlack.and(this.blacks);
+			if (surroundedThroneAndBlack.cardinality() == 2) {
+				return true;
+			}
+
+			surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedRight.clone();
+			surroundedThroneAndBlack.and(this.blacks);
+			if (surroundedThroneAndBlack.cardinality() == 2) {
+				return true;
+			}
+
+			surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedUp.clone();
+			surroundedThroneAndBlack.and(this.blacks);
+			if (surroundedThroneAndBlack.cardinality() == 2) {
+				return true;
+			}
+
+			surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedDown.clone();
+			surroundedThroneAndBlack.and(this.blacks);
+			if (surroundedThroneAndBlack.cardinality() == 2) {
+				return true;
+			}
+		}
+
+		// vicino barriera/campo + posizione generica
+		else {
+			if (checkRow(this.king.nextSetBit(0)) || checkColumn(this.king.nextSetBit(0)))
+				return true;
+		}
+
+		return false;
+
+	}
+
+	private boolean checkRow(int position) {
+
+		int row = position / BOARD_SIZE;
+		int col = position - row * BOARD_SIZE;
+
+		// capture left
+		if (col >= 2) {
+			if (this.getBlacks().get(row + BOARD_SIZE + col - 2) || camps.get(row * BOARD_SIZE + col - 2)) {
+				return true;
+			}
+		}
+
+		// capture right
+		if (col < BOARD_SIZE - 2) {
+			if (this.getBlacks().get(row + BOARD_SIZE + col + 2) || camps.get(row * BOARD_SIZE + col + 2)) {
+				return true;
+			}
+
+		}
+
+		return false;
+	}
+
+	private boolean checkColumn(int position) {
+
+		int row = position / BOARD_SIZE;
+		int col = position - row * BOARD_SIZE;
+
+		// capture up
+		if (row >= 2) {
+			if (this.getBlacks().get((row - 2) * BOARD_SIZE + col) || camps.get((row - 2) * BOARD_SIZE + col)) {
+				return true;
+			}
+		}
+
+		// capture down
+		if (row < BOARD_SIZE - 2) {
+			if (this.getBlacks().get((row + 2) * BOARD_SIZE + col) || camps.get((row + 2) * BOARD_SIZE + col)) {
+				return true;
+			}
+		}
+
 		return false;
 	}
 
@@ -397,8 +489,8 @@ public class MILTState {
 				}
 				row = i / BOARD_SIZE;
 				col = i - row * BOARD_SIZE;
-				
-				if(isWhiteThreatened(i,row,col)) {
+
+				if (isWhiteThreatened(i, row, col)) {
 					whitePawnsThreatened++;
 				}
 
@@ -455,7 +547,7 @@ public class MILTState {
 				}
 				row = i / BOARD_SIZE;
 				col = i - row * BOARD_SIZE;
-				if(isBlackThreatened(i,row,col)) {
+				if (isBlackThreatened(i, row, col)) {
 					blackPawnsThreatened++;
 				}
 
@@ -557,8 +649,6 @@ public class MILTState {
 	public void setBlacks(BitSet blacks) {
 		this.blacks = blacks;
 	}
-	
-	
 
 	public int getWhitePawnsThreatened() {
 		return whitePawnsThreatened;
@@ -843,16 +933,124 @@ public class MILTState {
 	}
 
 	public int evaluation() {
-		int result = 0;
-		if (escapes.intersects(king) || blacks.isEmpty()) {
-			result = Integer.MAX_VALUE;
-		} else if (king.isEmpty()) {
-			result = Integer.MIN_VALUE;
-		} else {
-			result = whites.cardinality() * 2 - blacks.cardinality();
+		return switch (this.turn) {
+		case WHITE -> new MILTWhiteHeuristics(this).evaluation();
+		case BLACK -> -new MILTBlackHeuristics(this).evaluation();
+		};
+	}
+
+	public boolean isKingThreatened() {
+		return kingThreatened;
+	}
+
+	public boolean hasKingEscapes() {
+
+		int i = -1;
+		int row = -1;
+		int col = -1;
+		int newPos = -1;
+
+		BitSet whiteInvalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		whiteInvalid.or(throne);
+		whiteInvalid.or(king);
+		whiteInvalid.or(whites);
+		whiteInvalid.or(camps);
+		whiteInvalid.or(blacks);
+
+		// king
+		i = this.king.nextSetBit(0);
+		if (i >= 0) {
+			row = i / BOARD_SIZE;
+			col = i - row * BOARD_SIZE;
+
+			// moving right
+			for (int j = 1; j < BOARD_SIZE - col; j++) {
+				newPos = i + j;
+				if (whiteInvalid.get(newPos)) {
+					break;
+				}
+				if (escapes.get(newPos)) {
+					return true;
+				}
+			}
+
+			// moving left
+			for (int j = 1; j <= col; j++) {
+				newPos = i - j;
+				if (whiteInvalid.get(newPos)) {
+					break;
+				}
+				if (escapes.get(newPos)) {
+					return true;
+				}
+			}
+
+			// moving down
+			for (int j = 1; j < BOARD_SIZE - row; j++) {
+				newPos = (row + j) * BOARD_SIZE + col;
+				if (whiteInvalid.get(newPos)) {
+					break;
+				}
+				if (escapes.get(newPos)) {
+					return true;
+				}
+			}
+
+			// moving up
+			for (int j = 1; j <= row; j++) {
+				newPos = (row - j) * BOARD_SIZE + col;
+				if (whiteInvalid.get(newPos)) {
+					break;
+				}
+				if (escapes.get(newPos)) {
+					return true;
+				}
+			}
+
+		}
+		return false;
+	}
+
+	public int getKingMovements(MILTState state) {
+		int count = 4;
+
+		BitSet invalid = new BitSet(BOARD_SIZE * BOARD_SIZE);
+		invalid.or(camps);
+		invalid.or(throne);
+		invalid.or(king);
+		invalid.or(whites);
+		invalid.or(blacks);
+
+		int i = this.king.nextSetBit(0);
+		int row = this.king.nextSetBit(0) / BOARD_SIZE;
+		int col = this.king.nextSetBit(0) - row * BOARD_SIZE;
+
+		// moving right
+		if (col < BOARD_SIZE - 1) {
+			if (invalid.get(i + 1)) {
+				count--;
+			}
+		}
+		// moving left
+		if (col > 0) {
+			if (invalid.get(i - 1)) {
+				count--;
+			}
+		}
+		// moving down
+		if (row < BOARD_SIZE - 1) {
+			if (invalid.get((row + 1) * BOARD_SIZE + col)) {
+				count--;
+			}
+		}
+		// moving up
+		if (row > 0) {
+			if (invalid.get((row - 1) * BOARD_SIZE + col)) {
+				count--;
+			}
 		}
 
-		return result;
+		return count;
 	}
 
 }

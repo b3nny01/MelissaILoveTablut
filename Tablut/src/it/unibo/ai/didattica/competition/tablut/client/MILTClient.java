@@ -143,7 +143,7 @@ public class MILTClient extends TablutClient {
 						}
 					}
 					MILTState miltState = new MILTState(MILTState.Turn.WHITE, king, whites, blacks);
-					MILTSearch miltSearch = new MILTSearch(miltGame, Integer.MIN_VALUE, Integer.MAX_VALUE, timeout-2);
+					MILTSearch miltSearch = new MILTSearch(miltGame, -1000, 1000, timeout-2);
 					MILTAction miltBestAction=miltSearch.makeDecision(miltState);
 					
 					try {
