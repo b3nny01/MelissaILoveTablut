@@ -12,7 +12,7 @@ import java.util.Random;
 
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 import melissaILoveTablut.*;
-import melissaILoveTablut.heuristics.MILTEvaluator;
+import melissaILoveTablut.heuristics.MILTWhiteEvaluator;
 import it.unibo.ai.didattica.competition.tablut.domain.StateTablut;
 import it.unibo.ai.didattica.competition.tablut.domain.Game;
 import it.unibo.ai.didattica.competition.tablut.domain.GameAshtonTablut;
@@ -151,8 +151,8 @@ public class MILTClient extends TablutClient {
 							}
 						}
 					}
-					MILTEvaluator evaluator = new MILTEvaluator();
-					MILTState miltState = new MILTState(MILTState.Turn.WHITE, whites, blacks, king);
+					MILTWhiteEvaluator evaluator = new MILTWhiteEvaluator();
+					MILTState miltState = new MILTState(MILTState.Turn.WHITE, whites, blacks, king,state.getTurn());
 					MILTSearch miltSearch = new MILTSearch(miltGame, timeout - 2);
 					MILTAction miltBestAction = miltSearch.makeDecision(miltState);
 					try {
@@ -209,7 +209,7 @@ public class MILTClient extends TablutClient {
 							}
 						}
 					}
-					MILTState miltState = new MILTState(MILTState.Turn.BLACK, whites, blacks, king);
+					MILTState miltState = new MILTState(MILTState.Turn.BLACK, whites, blacks, king,state.getTurn());
 					MILTSearch miltSearch = new MILTSearch(miltGame, timeout - 2);
 					MILTAction miltBestAction = miltSearch.makeDecision(miltState);
 					try {
