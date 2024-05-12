@@ -1,4 +1,4 @@
-package melissaILoveTablut.heuristics;
+package heuristics;
 
 import java.util.BitSet;
 import java.util.List;

@@ -3,13 +3,11 @@ package melissaILoveTablut;
 import aima.core.search.adversarial.Game;
 import aima.core.search.adversarial.IterativeDeepeningAlphaBetaSearch;
 import melissaILoveTablut.MILTState.Turn;
-import melissaILoveTablut.heuristics.MILTEvaluator;
 
 public class MILTSearch extends IterativeDeepeningAlphaBetaSearch<MILTState, MILTAction, MILTState.Turn> {
-	
-	public MILTSearch(Game<MILTState, MILTAction, Turn> game,int time) {
-		super(game, Integer.MIN_VALUE, Integer.MAX_VALUE, time);
 
+	public MILTSearch(Game<MILTState, MILTAction, Turn> game, double utilMin, double utilMax, int time) {
+		super(game, utilMin, utilMax, time);
 	}
 
 	@Override
@@ -23,8 +21,6 @@ public class MILTSearch extends IterativeDeepeningAlphaBetaSearch<MILTState, MIL
 		MILTAction action = super.makeDecision(state);
 		System.out.println("explored nodes: " + getMetrics().get(METRICS_NODES_EXPANDED));
 		System.out.println("depth reached: " + getMetrics().get(METRICS_MAX_DEPTH));
-		System.out.println("choosen: "+action);
-		System.out.println("evaluated: "+this.eval(state, state.getTurn()));
 		return action;
 	}
 
