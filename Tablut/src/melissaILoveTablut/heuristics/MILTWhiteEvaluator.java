@@ -7,9 +7,16 @@ import melissaILoveTablut.MILTState.Turn;
 
 public class MILTWhiteEvaluator implements MILTEvaluator {
 
-	private final static int[] kingPosVals = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, -1, 0, -1, 3, 2, 0, 0, 3, 4, 2, 2, 2,
-			4, 3, 0, 0, -1, 2, 0, 0, 0, 2, -1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, -1, 2, 0, 0, 0, 2, -1, 0, 0, 3, 4, 2, 2,
-			2, 4, 3, 0, 0, 2, 3, -1, 0, -1, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private final static int[] kingPosVals = { 
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 
+			0, 2, 3, -1, 0, -1, 3, 2, 0, 
+			0, 3, 4, 2, 2, 2, 4, 3, 0, 
+			0, -1, 2, 0, 0, 0, 2, -1, 0, 
+			0, 0, 2, 0, 0, 0, 2, 0, 0, 
+			0, -1, 2, 0, 0, 0, 2, -1, 0, 
+			0, 3, 4, 2, 2, 2, 4, 3, 0,
+			0, 2, 3, -1, 0, -1, 3, 2, 0, 
+			0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 	private double evaluateKingPos(MILTState state) {
 		int kingPos = state.getKing().nextSetBit(0);
@@ -32,27 +39,18 @@ public class MILTWhiteEvaluator implements MILTEvaluator {
 					val = kingPosVals[kingPos] * 5;
 					val += state.getKingMovements()*10;
 				}
-
 			}
-
 		}
 		return val;
 
 	}
-	
-	/*
-	 * 010
-	 * 010
-	 * 101
-	 * 
-	 * */
 	
 	private double evaluateFreeWays(MILTState state) {
 		BitSet temp=new BitSet(MILTState.BOARD_SIZE*MILTState.BOARD_SIZE);
 		temp.or(state.getWhites());
 		temp.or(state.getBlacks());
 		temp.and(MILTState.whiteStarts);
-		return 10*(8-temp.cardinality());
+		return 20*(8-temp.cardinality());
 	}
 
 	public double evaluate(MILTState state) {
@@ -61,10 +59,10 @@ public class MILTWhiteEvaluator implements MILTEvaluator {
 			val = (state.isWhiteWin()) ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
 		} else {
 			val -= 30 * state.getBlacksWhitesDiff();
-			val += 5*state.getBlackPawnsThreatened();
+			val += 10*state.getBlackPawnsThreatened();
 			val += this.evaluateKingPos(state);
 			val += this.evaluateFreeWays(state);
-			val -= 10*state.getWhitePawnsThreatened();
+			val -= 5*state.getWhitePawnsThreatened();
 		}
 		return val;
 	}
