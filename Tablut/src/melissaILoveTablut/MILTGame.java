@@ -4,9 +4,14 @@ import java.util.List;
 
 import aima.core.search.adversarial.Game;
 import melissaILoveTablut.MILTState.Turn;
+import melissaILoveTablut.heuristics.MILTBlackEvaluator;
+import melissaILoveTablut.heuristics.MILTEvaluator;
+import melissaILoveTablut.heuristics.MILTWhiteEvaluator;
 
-public class MILTGame implements Game<MILTState,MILTAction,MILTState.Turn> {
-	
+public class MILTGame implements Game<MILTState, MILTAction, MILTState.Turn> {
+
+	public MILTGame() {
+	}
 
 	@Override
 	public List<MILTAction> getActions(MILTState state) {
@@ -15,7 +20,7 @@ public class MILTGame implements Game<MILTState,MILTAction,MILTState.Turn> {
 
 	@Override
 	public MILTState getInitialState() {
-		return MILTState.initialState;
+		return MILTState.getInitialState();
 	}
 
 	@Override
@@ -35,7 +40,14 @@ public class MILTGame implements Game<MILTState,MILTAction,MILTState.Turn> {
 
 	@Override
 	public double getUtility(MILTState state, Turn turn) {
-		return state.evaluation();
+		if ((turn == Turn.BLACK && state.isBlackWin()) || (turn == Turn.WHITE && state.isWhiteWin())) {
+			return Double.POSITIVE_INFINITY;
+		} else if ((turn == Turn.BLACK && state.isWhiteWin()) || (turn == Turn.WHITE && state.isBlackWin())) {
+			return Double.NEGATIVE_INFINITY;
+		}
+
+		MILTEvaluator evaluator = (turn == Turn.WHITE) ? new MILTWhiteEvaluator() : new MILTBlackEvaluator();
+		return state.evaluation(evaluator);
 	}
 
 	@Override

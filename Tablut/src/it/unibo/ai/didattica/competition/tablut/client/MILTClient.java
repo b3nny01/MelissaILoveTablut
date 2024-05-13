@@ -2,22 +2,13 @@ package it.unibo.ai.didattica.competition.tablut.client;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-
 import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
 import melissaILoveTablut.*;
+import melissaILoveTablut.heuristics.MILTWhiteEvaluator;
 import it.unibo.ai.didattica.competition.tablut.domain.StateTablut;
-import it.unibo.ai.didattica.competition.tablut.domain.Game;
-import it.unibo.ai.didattica.competition.tablut.domain.GameAshtonTablut;
-import it.unibo.ai.didattica.competition.tablut.domain.GameModernTablut;
-import it.unibo.ai.didattica.competition.tablut.domain.GameTablut;
 import it.unibo.ai.didattica.competition.tablut.domain.State;
-import it.unibo.ai.didattica.competition.tablut.domain.StateBrandub;
 import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
 
 /**
@@ -56,19 +47,26 @@ public class MILTClient extends TablutClient {
 		String name = "MelissaILoveTablut";
 		String ipAddress = "localhost";
 		int timeout = 60;
+
+		System.out.println(Arrays.toString(args));
 		// TODO: change the behavior?
 		if (args.length < 1) {
 			System.out.println("You must specify which player you are (WHITE or BLACK)");
 			System.exit(-1);
-		} else {
+		} else if (args.length == 1) {
 			System.out.println(args[0]);
 			role = (args[0]);
-		}
-		if (args.length == 2) {
-			System.out.println(args[1]);
+		} else if (args.length == 2) {
+			System.out.println(args[0]);
+			role = (args[0]);
+			System.out.println("timeout: " + args[1]);
 			timeout = Integer.parseInt(args[1]);
-		}
-		if (args.length == 3) {
+		} else if (args.length == 3) {
+			System.out.println(args[0]);
+			role = (args[0]);
+			System.out.println("timeout: " + args[1]);
+			timeout = Integer.parseInt(args[1]);
+			System.out.println("ip: " + args[2]);
 			ipAddress = args[2];
 		}
 		System.out.println("Selected client: " + args[0]);
@@ -85,14 +83,14 @@ public class MILTClient extends TablutClient {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		if(this.game!=4) {
+		if (this.game != 4) {
 			System.out.println("Error in game selection");
 			System.exit(4);
 		}
 
 		System.out.println("You are player " + this.getPlayer().toString() + "!");
 
-		State state=null;
+		State state = null;
 		BitSet whites = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
 		BitSet blacks = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
 		BitSet king = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
@@ -142,10 +140,10 @@ public class MILTClient extends TablutClient {
 							}
 						}
 					}
-					MILTState miltState = new MILTState(MILTState.Turn.WHITE, king, whites, blacks);
-					MILTSearch miltSearch = new MILTSearch(miltGame, -1000, 1000, timeout-2);
-					MILTAction miltBestAction=miltSearch.makeDecision(miltState);
-					
+					MILTWhiteEvaluator evaluator = new MILTWhiteEvaluator();
+					MILTState miltState = new MILTState(MILTState.Turn.WHITE, whites, blacks, king,state.getTurn());
+					MILTSearch miltSearch = new MILTSearch(miltGame, timeout - 2);
+					MILTAction miltBestAction = miltSearch.makeDecision(miltState);
 					try {
 						this.write(miltBestAction.toAction());
 					} catch (ClassNotFoundException | IOException e) {
@@ -200,11 +198,9 @@ public class MILTClient extends TablutClient {
 							}
 						}
 					}
-					MILTState miltState = new MILTState(MILTState.Turn.BLACK, king, whites, blacks);
-					MILTSearch miltSearch = new MILTSearch(miltGame, Integer.MIN_VALUE, Integer.MAX_VALUE, timeout-2);
-					MILTAction miltBestAction=miltSearch.makeDecision(miltState);
-
-					System.out.println("Mossa scelta: " + miltBestAction.toString());
+					MILTState miltState = new MILTState(MILTState.Turn.BLACK, whites, blacks, king,state.getTurn());
+					MILTSearch miltSearch = new MILTSearch(miltGame, timeout - 2);
+					MILTAction miltBestAction = miltSearch.makeDecision(miltState);
 					try {
 						this.write(miltBestAction.toAction());
 					} catch (ClassNotFoundException | IOException e) {
