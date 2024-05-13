@@ -48,14 +48,14 @@ public class MILTState {
 		BitSet result = new BitSet(BOARD_SIZE * BOARD_SIZE);
 		result.set(22);
 		result.set(31);
-		result.set(38,40);
-		result.set(41,43);
+		result.set(38, 40);
+		result.set(41, 43);
 		result.set(49);
 		result.set(58);
 		return result;
 
 	}
-	
+
 	private static BitSet initEscapes() {
 		BitSet result = new BitSet(BOARD_SIZE * BOARD_SIZE);
 		result.set(1, 3);
@@ -184,7 +184,7 @@ public class MILTState {
 		return new MILTState(Turn.WHITE, whites, blacks, king);
 	}
 
-	public static final BitSet whiteStarts= initWhiteStarts();
+	public static final BitSet whiteStarts = initWhiteStarts();
 	public static final BitSet escapes = initEscapes();
 	public static final BitSet campLeft = initCampLeft();
 	public static final BitSet campRight = initCampRight();
@@ -488,45 +488,53 @@ public class MILTState {
 
 		// attorno al trono
 		else if (this.king.intersects(aroundThrone)) {
-
-			BitSet surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedLeft.clone();
-			surroundedThroneAndBlack.and(this.blacks);
-			if (surroundedThroneAndBlack.cardinality() == 2) {
-				surroundedThroneAndBlack.xor(aroundThroneSurroundedLeft);
-				toCheck = surroundedThroneAndBlack.nextSetBit(0);
-				toCheckRow = toCheck / BOARD_SIZE;
-				toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
-				return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+			BitSet surroundedThroneAndBlack;
+			if (pos == 39) {
+				surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedLeft.clone();
+				surroundedThroneAndBlack.and(this.blacks);
+				if (surroundedThroneAndBlack.cardinality() == 2) {
+					surroundedThroneAndBlack.xor(aroundThroneSurroundedLeft);
+					toCheck = surroundedThroneAndBlack.nextSetBit(0);
+					toCheckRow = toCheck / BOARD_SIZE;
+					toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
+					return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+				}
 			}
 
-			surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedRight.clone();
-			surroundedThroneAndBlack.and(this.blacks);
-			if (surroundedThroneAndBlack.cardinality() == 2) {
-				surroundedThroneAndBlack.xor(aroundThroneSurroundedRight);
-				toCheck = surroundedThroneAndBlack.nextSetBit(0);
-				toCheckRow = toCheck / BOARD_SIZE;
-				toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
-				return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+			else if (pos == 41) {
+				surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedRight.clone();
+				surroundedThroneAndBlack.and(this.blacks);
+				if (surroundedThroneAndBlack.cardinality() == 2) {
+					surroundedThroneAndBlack.xor(aroundThroneSurroundedRight);
+					toCheck = surroundedThroneAndBlack.nextSetBit(0);
+					toCheckRow = toCheck / BOARD_SIZE;
+					toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
+					return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+				}
 			}
 
-			surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedUp.clone();
-			surroundedThroneAndBlack.and(this.blacks);
-			if (surroundedThroneAndBlack.cardinality() == 2) {
-				surroundedThroneAndBlack.xor(aroundThroneSurroundedUp);
-				toCheck = surroundedThroneAndBlack.nextSetBit(0);
-				toCheckRow = toCheck / BOARD_SIZE;
-				toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
-				return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+			else if (pos == 31) {
+				surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedUp.clone();
+				surroundedThroneAndBlack.and(this.blacks);
+				if (surroundedThroneAndBlack.cardinality() == 2) {
+					surroundedThroneAndBlack.xor(aroundThroneSurroundedUp);
+					toCheck = surroundedThroneAndBlack.nextSetBit(0);
+					toCheckRow = toCheck / BOARD_SIZE;
+					toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
+					return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+				}
 			}
 
-			surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedDown.clone();
-			surroundedThroneAndBlack.and(this.blacks);
-			if (surroundedThroneAndBlack.cardinality() == 2) {
-				surroundedThroneAndBlack.xor(aroundThroneSurroundedDown);
-				toCheck = surroundedThroneAndBlack.nextSetBit(0);
-				toCheckRow = toCheck / BOARD_SIZE;
-				toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
-				return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+			else if (pos == 49) {
+				surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedDown.clone();
+				surroundedThroneAndBlack.and(this.blacks);
+				if (surroundedThroneAndBlack.cardinality() == 2) {
+					surroundedThroneAndBlack.xor(aroundThroneSurroundedDown);
+					toCheck = surroundedThroneAndBlack.nextSetBit(0);
+					toCheckRow = toCheck / BOARD_SIZE;
+					toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
+					return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+				}
 			}
 		}
 		// vicino barriera/campo + posizione generica
@@ -911,9 +919,8 @@ public class MILTState {
 			// capture left
 			if (col >= 2) {
 				if (newBlacks.get(row * BOARD_SIZE + col - 1) && !camps.get(row * BOARD_SIZE + col - 1)) {
-					if (newWhites.get(row * BOARD_SIZE + col - 2)
-							|| newKing.get(row * BOARD_SIZE + col - 2) || camps.get(row * BOARD_SIZE + col - 2)
-							|| throne.get(row * BOARD_SIZE + col - 2)) {
+					if (newWhites.get(row * BOARD_SIZE + col - 2) || newKing.get(row * BOARD_SIZE + col - 2)
+							|| camps.get(row * BOARD_SIZE + col - 2) || throne.get(row * BOARD_SIZE + col - 2)) {
 						newBlacks.clear(row * BOARD_SIZE + col - 1);
 					}
 				}
@@ -922,9 +929,8 @@ public class MILTState {
 			// capture right
 			if (col < BOARD_SIZE - 2) {
 				if (newBlacks.get(row * BOARD_SIZE + col + 1) && !camps.get(row * BOARD_SIZE + col + 1)) {
-					if (newWhites.get(row * BOARD_SIZE + col + 2)
-							|| newKing.get(row * BOARD_SIZE + col + 2) || camps.get(row * BOARD_SIZE + col + 2)
-							|| throne.get(row * BOARD_SIZE + col + 2)) {
+					if (newWhites.get(row * BOARD_SIZE + col + 2) || newKing.get(row * BOARD_SIZE + col + 2)
+							|| camps.get(row * BOARD_SIZE + col + 2) || throne.get(row * BOARD_SIZE + col + 2)) {
 						newBlacks.clear(row * BOARD_SIZE + col + 1);
 					}
 				}
@@ -934,8 +940,7 @@ public class MILTState {
 			// capture up
 			if (row >= 2) {
 				if (newBlacks.get((row - 1) * BOARD_SIZE + col) && !camps.get((row - 1) * BOARD_SIZE + col)) {
-					if (newWhites.get((row - 2) * BOARD_SIZE + col)
-							|| newKing.get((row - 2) * BOARD_SIZE + col)
+					if (newWhites.get((row - 2) * BOARD_SIZE + col) || newKing.get((row - 2) * BOARD_SIZE + col)
 							|| camps.get((row - 2) * BOARD_SIZE + col) || throne.get((row - 2) * BOARD_SIZE + col)) {
 						newBlacks.clear((row - 1) * BOARD_SIZE + col);
 					}
@@ -946,8 +951,7 @@ public class MILTState {
 			// capture down
 			if (row < BOARD_SIZE - 2) {
 				if (newBlacks.get((row + 1) * BOARD_SIZE + col) && !camps.get((row + 1) * BOARD_SIZE + col)) {
-					if (newWhites.get((row + 2) * BOARD_SIZE + col)
-							|| newKing.get((row + 2) * BOARD_SIZE + col)
+					if (newWhites.get((row + 2) * BOARD_SIZE + col) || newKing.get((row + 2) * BOARD_SIZE + col)
 							|| camps.get((row + 2) * BOARD_SIZE + col) || throne.get((row + 2) * BOARD_SIZE + col)) {
 						newBlacks.clear((row + 1) * BOARD_SIZE + col);
 					}
@@ -1050,8 +1054,7 @@ public class MILTState {
 				// capture left
 				if (col >= 2) {
 					if (newKing.get(row * BOARD_SIZE + col - 1)) {
-						if (newBlacks.get(row * BOARD_SIZE + col - 2)
-								|| camps.get(row * BOARD_SIZE + col - 2)) {
+						if (newBlacks.get(row * BOARD_SIZE + col - 2) || camps.get(row * BOARD_SIZE + col - 2)) {
 							newKing.clear();
 						}
 					}
@@ -1060,8 +1063,7 @@ public class MILTState {
 				// capture right
 				if (col < BOARD_SIZE - 2) {
 					if (newKing.get(row * BOARD_SIZE + col + 1)) {
-						if (newBlacks.get(row * BOARD_SIZE + col + 2)
-								|| camps.get(row * BOARD_SIZE + col + 2)) {
+						if (newBlacks.get(row * BOARD_SIZE + col + 2) || camps.get(row * BOARD_SIZE + col + 2)) {
 							newKing.clear();
 						}
 					}
@@ -1071,8 +1073,7 @@ public class MILTState {
 				// capture up
 				if (row >= 2) {
 					if (newKing.get((row - 1) * BOARD_SIZE + col)) {
-						if (newBlacks.get((row - 2) * BOARD_SIZE + col)
-								|| camps.get((row - 2) * BOARD_SIZE + col)) {
+						if (newBlacks.get((row - 2) * BOARD_SIZE + col) || camps.get((row - 2) * BOARD_SIZE + col)) {
 							newKing.clear();
 						}
 					}
@@ -1082,8 +1083,7 @@ public class MILTState {
 				// capture down
 				if (row < BOARD_SIZE - 2) {
 					if (newKing.get((row + 1) * BOARD_SIZE + col)) {
-						if (newBlacks.get((row + 2) * BOARD_SIZE + col)
-								|| camps.get((row + 2) * BOARD_SIZE + col)
+						if (newBlacks.get((row + 2) * BOARD_SIZE + col) || camps.get((row + 2) * BOARD_SIZE + col)
 								|| throne.get((row + 2) * BOARD_SIZE + col)) {
 							newKing.clear();
 						}
@@ -1125,7 +1125,6 @@ public class MILTState {
 		return evaluator.evaluate(this);
 	}
 
-	
 	public boolean isKingThreatened() {
 		return kingThreatened;
 	}
