@@ -48,6 +48,20 @@ public class MILTClient extends TablutClient {
 		String ipAddress = "localhost";
 		int timeout = 60;
 
+		System.out.println(""
+				+ " __  __      _ _               \r\n"
+				+ "|  \\/  | ___| (_)___ ___  __ _ \r\n"
+				+ "| |\\/| |/ _ \\ | / __/ __|/ _` |\r\n"
+				+ "| |  | |  __/ | \\__ \\__ \\ (_| |\r\n"
+				+ "|_|  |_|\\___|_|_|___/___/\\__,_|\r\n"
+				+ " ___        _____     _      _       _   \r\n"
+				+ "|_ _|      |_   _|_ _| |__ | |_   _| |_ \r\n"
+				+ " | |  _   _  | |/ _` | '_ \\| | | | | __| \r\n"
+				+ " | | (  v  ) | | (_| | |_) | | |_| | | \r\n" 
+				+ "|___| '._.'  |_|\\__,_|_.__/|_|\\___/|_| \r\n"
+				+ "");
+		;
+
 		System.out.println(Arrays.toString(args));
 		// TODO: change the behavior?
 		if (args.length < 1) {
@@ -141,7 +155,7 @@ public class MILTClient extends TablutClient {
 						}
 					}
 					MILTWhiteEvaluator evaluator = new MILTWhiteEvaluator();
-					MILTState miltState = new MILTState(MILTState.Turn.WHITE, whites, blacks, king,state.getTurn());
+					MILTState miltState = new MILTState(MILTState.Turn.WHITE, whites, blacks, king, state.getTurn());
 					MILTSearch miltSearch = new MILTSearch(miltGame, timeout - 2);
 					MILTAction miltBestAction = miltSearch.makeDecision(miltState);
 					try {
@@ -198,7 +212,7 @@ public class MILTClient extends TablutClient {
 							}
 						}
 					}
-					MILTState miltState = new MILTState(MILTState.Turn.BLACK, whites, blacks, king,state.getTurn());
+					MILTState miltState = new MILTState(MILTState.Turn.BLACK, whites, blacks, king, state.getTurn());
 					MILTSearch miltSearch = new MILTSearch(miltGame, timeout - 2);
 					MILTAction miltBestAction = miltSearch.makeDecision(miltState);
 					try {
