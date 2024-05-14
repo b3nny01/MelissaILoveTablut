@@ -18,10 +18,10 @@ public class MILTBlackEvaluator implements MILTEvaluator {
 			0, 2, 3, -1, 0, -1, 3, 2, 0, 
 			0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	
-	private final static int B_W_DIFF_VAL = 30;
+	private final static int B_W_DIFF_VAL = 20;
 	private final static int B_THREATENED = 5;
 	private final static int W_THREATENED = 10;
-	private final static int K_THREATENED = 30;
+	private final static int K_THREATENED = 150;
 	private final static int KING_POS_VAL = 5;
 	private final static int KING_MOV_VAL = 10;
 	private final static int FREE_WAYS_VAL = 20;
@@ -33,7 +33,7 @@ public class MILTBlackEvaluator implements MILTEvaluator {
 			if (state.getTurn() == Turn.WHITE) {
 				if (state.hasKingEscapes()) {
 					val = Double.POSITIVE_INFINITY;
-				} else if (state.isKingThreatened()) {
+				} else if (state.couldKingBeThreatened()) {
 					val = -K_THREATENED;
 				} else {
 					val = kingPosVals[kingPos] * KING_POS_VAL;

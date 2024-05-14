@@ -821,6 +821,7 @@ public class MILTState {
 		this.kingThreatened = this.computeKingThreatened();
 		this.whitePawnsThreatened = this.computeWhitesThreatened();
 		this.blackPawnsThreatened = this.computeBlacksThreatened();
+		this.availableActions = this.computeAvaliableActions();
 
 	}
 
@@ -1026,6 +1027,8 @@ public class MILTState {
 			}
 
 			// capture king
+
+			int kingPos = newKing.nextSetBit(0);
 			if (king.intersects(throne)) {
 				if (aroundThrone.get(action.to())) {
 					BitSet aroundThroneAndBlacks = (BitSet) throne.clone();
@@ -1037,28 +1040,28 @@ public class MILTState {
 				}
 
 			} else if (king.intersects(aroundThrone)) {
-				if (aroundThroneSurroundedLeft.get(action.to())) {
+				if (kingPos == 39 && aroundThroneSurroundedLeft.get(action.to())) {
 					BitSet surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedLeft.clone();
 					surroundedThroneAndBlack.and(newBlacks);
 					if (surroundedThroneAndBlack.cardinality() == 3) {
 						newKing.clear();
 					}
 				}
-				if (aroundThroneSurroundedRight.get(action.to())) {
+				if (kingPos == 41 && aroundThroneSurroundedRight.get(action.to())) {
 					BitSet surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedRight.clone();
 					surroundedThroneAndBlack.and(newBlacks);
 					if (surroundedThroneAndBlack.cardinality() == 3) {
 						newKing.clear();
 					}
 				}
-				if (aroundThroneSurroundedUp.get(action.to())) {
+				if (kingPos == 31 && aroundThroneSurroundedUp.get(action.to())) {
 					BitSet surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedUp.clone();
 					surroundedThroneAndBlack.and(newBlacks);
 					if (surroundedThroneAndBlack.cardinality() == 3) {
 						newKing.clear();
 					}
 				}
-				if (aroundThroneSurroundedDown.get(action.to())) {
+				if (kingPos == 49 && aroundThroneSurroundedDown.get(action.to())) {
 					BitSet surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedDown.clone();
 					surroundedThroneAndBlack.and(newBlacks);
 					if (surroundedThroneAndBlack.cardinality() == 3) {
@@ -1143,6 +1146,15 @@ public class MILTState {
 
 	public boolean isKingThreatened() {
 		return kingThreatened;
+	}
+
+	public boolean couldKingBeThreatened() {
+		int pos = this.king.nextSetBit(0);
+		int row = pos / BOARD_SIZE;
+		int col = pos - row * BOARD_SIZE;
+
+		return this.isWhiteThreatened(pos, row, col);
+
 	}
 
 	public boolean hasKingEscapes() {
