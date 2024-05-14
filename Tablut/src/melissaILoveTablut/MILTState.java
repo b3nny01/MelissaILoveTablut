@@ -5,6 +5,7 @@ import java.util.BitSet;
 import java.util.List;
 
 import it.unibo.ai.didattica.competition.tablut.domain.State;
+import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
 import melissaILoveTablut.heuristics.MILTEvaluator;
 import melissaILoveTablut.heuristics.MILTWhiteEvaluator;
 
@@ -184,6 +185,43 @@ public class MILTState {
 		return new MILTState(Turn.WHITE, whites, blacks, king);
 	}
 
+	public static MILTState from(State.Turn turn, State state) {
+		BitSet whites = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
+		BitSet blacks = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
+		BitSet king = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
+
+		Pawn p;
+		for (int i = 0; i < MILTState.BOARD_SIZE; i++) {
+			for (int j = 0; j < MILTState.BOARD_SIZE; j++) {
+				p = state.getPawn(i, j);
+				switch (p) {
+				case KING -> {
+					king.set(i * MILTState.BOARD_SIZE + j);
+				}
+
+				case WHITE -> {
+					whites.set(i * MILTState.BOARD_SIZE + j);
+
+				}
+
+				case BLACK -> {
+					blacks.set(i * MILTState.BOARD_SIZE + j);
+				}
+				default -> {
+				}
+				}
+			}
+		}
+
+		Turn miltTurn = switch (turn) {
+		case WHITE -> Turn.WHITE;
+		case BLACK -> Turn.BLACK;
+		default -> throw new IllegalArgumentException("turn must be WHITE or BLACK");
+		};
+
+		return new MILTState(miltTurn, whites, blacks, king);
+	}
+
 	public static final BitSet whiteStarts = initWhiteStarts();
 	public static final BitSet escapes = initEscapes();
 	public static final BitSet campLeft = initCampLeft();
@@ -209,6 +247,7 @@ public class MILTState {
 
 	private boolean isSquareUnderLeftAttackOf(PieceType toCheck, int pos, int row, int col) {
 		int newPos = -1;
+		boolean result = false;
 
 		switch (toCheck) {
 		case WHITE_PAWN -> {
@@ -217,7 +256,7 @@ public class MILTState {
 				if (king.get(newPos) || blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
 					break;
 				} else if (whites.get(newPos)) {
-					return true;
+					result = true;
 				}
 			}
 
@@ -228,7 +267,7 @@ public class MILTState {
 				if (whites.get(newPos) || blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
 					break;
 				} else if (king.get(newPos)) {
-					return true;
+					result = true;
 				}
 			}
 
@@ -239,17 +278,18 @@ public class MILTState {
 				if (king.get(newPos) || whites.get(newPos) || throne.get(newPos)) {
 					break;
 				} else if (blacks.get(newPos)) {
-					return true;
+					result = true;
 				}
 			}
 		}
 		}
-		return false;
+		return result;
 
 	}
 
 	private boolean isSquareUnderRightAttackOf(PieceType toCheck, int pos, int row, int col) {
 		int newPos = -1;
+		boolean result = false;
 
 		switch (toCheck) {
 		case WHITE_PAWN -> {
@@ -258,7 +298,7 @@ public class MILTState {
 				if (king.get(newPos) || blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
 					break;
 				} else if (whites.get(newPos)) {
-					return true;
+					result = true;
 				}
 
 			}
@@ -270,7 +310,7 @@ public class MILTState {
 				if (whites.get(newPos) || blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
 					break;
 				} else if (king.get(newPos)) {
-					return true;
+					result = true;
 				}
 
 			}
@@ -282,17 +322,18 @@ public class MILTState {
 				if (king.get(newPos) || whites.get(newPos) || throne.get(newPos)) {
 					break;
 				} else if (blacks.get(newPos)) {
-					return true;
+					result = true;
 				}
 			}
 		}
 		}
-		return false;
+		return result;
 
 	}
 
 	private boolean isSquareUnderDownAttackOf(PieceType toCheck, int pos, int row, int col) {
 		int newPos = -1;
+		boolean result = false;
 
 		switch (toCheck) {
 		case WHITE_PAWN -> {
@@ -301,7 +342,7 @@ public class MILTState {
 				if (king.get(newPos) || blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
 					break;
 				} else if (whites.get(newPos)) {
-					return true;
+					result = true;
 				}
 
 			}
@@ -313,7 +354,7 @@ public class MILTState {
 				if (whites.get(newPos) || blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
 					break;
 				} else if (king.get(newPos)) {
-					return true;
+					result = true;
 				}
 			}
 
@@ -324,17 +365,18 @@ public class MILTState {
 				if (king.get(newPos) || whites.get(newPos) || throne.get(newPos)) {
 					break;
 				} else if (blacks.get(newPos)) {
-					return true;
+					result = true;
 				}
 			}
 		}
 		}
-		return false;
+		return result;
 
 	}
 
 	private boolean isSquareUnderUpAttackOf(PieceType toCheck, int pos, int row, int col) {
 		int newPos = -1;
+		boolean result = false;
 
 		switch (toCheck) {
 		case WHITE_PAWN -> {
@@ -343,7 +385,7 @@ public class MILTState {
 				if (king.get(newPos) || blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
 					break;
 				} else if (whites.get(newPos)) {
-					return true;
+					result = true;
 				}
 
 			}
@@ -355,7 +397,7 @@ public class MILTState {
 				if (whites.get(newPos) || blacks.get(newPos) || throne.get(newPos) || camps.get(newPos)) {
 					break;
 				} else if (king.get(newPos)) {
-					return true;
+					result = true;
 				}
 			}
 
@@ -366,129 +408,123 @@ public class MILTState {
 				if (king.get(newPos) || whites.get(newPos) || throne.get(newPos)) {
 					break;
 				} else if (blacks.get(newPos)) {
-					return true;
+					result = true;
 				}
 			}
 		}
 		}
-		return false;
+		return result;
 
 	}
 
 	private boolean isSquareUnderAttackOf(PieceType toCheck, int pos, int row, int col) {
-		if (blacks.get(pos) || whites.get(pos) || king.get(pos)) {
-			return false;
+		boolean result = false;
+		if (!(blacks.get(pos) || whites.get(pos) || king.get(pos))) {
+			result = this.isSquareUnderLeftAttackOf(toCheck, pos, row, col)
+					|| this.isSquareUnderRightAttackOf(toCheck, pos, row, col)
+					|| this.isSquareUnderUpAttackOf(toCheck, pos, row, col)
+					|| this.isSquareUnderDownAttackOf(toCheck, pos, row, col);
 		}
-		return this.isSquareUnderLeftAttackOf(toCheck, pos, row, col)
-				|| this.isSquareUnderRightAttackOf(toCheck, pos, row, col)
-				|| this.isSquareUnderUpAttackOf(toCheck, pos, row, col)
-				|| this.isSquareUnderDownAttackOf(toCheck, pos, row, col);
+		return result;
 	}
 
 	private boolean isBlackThreatened(int pos, int row, int col) {
-		if (camps.get((row * BOARD_SIZE) + col)) {
-			return false;
+		boolean result = false;
+
+		if (!camps.get((row * BOARD_SIZE) + col)) {
+			if (col < BOARD_SIZE - 1 && col > 0) {
+				// right threat
+				if (whites.get(pos - 1) || king.get(pos - 1) || camps.get(pos - 1) || throne.get(pos - 1)) {
+
+					result = result || isSquareUnderAttackOf(PieceType.WHITE_KING, pos + 1, row, col + 1)
+							|| isSquareUnderAttackOf(PieceType.WHITE_PAWN, pos + 1, row, col + 1);
+				}
+				// left threat
+				if ((whites.get(pos + 1) || king.get(pos + 1) || camps.get(pos + 1) || throne.get(pos + 1))) {
+					result = result || isSquareUnderAttackOf(PieceType.WHITE_KING, pos - 1, row, col - 1)
+							|| isSquareUnderAttackOf(PieceType.WHITE_PAWN, pos - 1, row, col - 1);
+				}
+			}
+
+			if (row > 0 && row < BOARD_SIZE - 1) {
+				// down threat
+				if (whites.get(pos - BOARD_SIZE) || king.get(pos - BOARD_SIZE) || camps.get(pos - BOARD_SIZE)
+						|| throne.get(pos - BOARD_SIZE)) {
+					result = result || isSquareUnderAttackOf(PieceType.WHITE_KING, pos + BOARD_SIZE, row + 1, col)
+							|| isSquareUnderAttackOf(PieceType.WHITE_PAWN, pos + BOARD_SIZE, row + 1, col);
+
+				}
+				// up threat
+				if (whites.get(pos + BOARD_SIZE) || king.get(pos + BOARD_SIZE) || camps.get(pos + BOARD_SIZE)
+						|| throne.get(pos + BOARD_SIZE)) {
+					result = result || isSquareUnderAttackOf(PieceType.WHITE_KING, pos - BOARD_SIZE, row - 1, col)
+							|| isSquareUnderAttackOf(PieceType.WHITE_PAWN, pos - BOARD_SIZE, row - 1, col);
+				}
+
+			}
 		}
-
-		if (col < BOARD_SIZE - 1 && col > 0) {
-			// right threat
-			if (whites.get(pos - 1) || king.get(pos - 1) || camps.get(pos - 1) || throne.get(pos - 1)) {
-				if (isSquareUnderAttackOf(PieceType.WHITE_KING, pos + 1, row, col + 1)
-						|| isSquareUnderAttackOf(PieceType.WHITE_PAWN, pos + 1, row, col + 1)) {
-					return true;
-				}
-			}
-			// left threat
-			if (whites.get(pos + 1) || king.get(pos + 1) || camps.get(pos + 1) || throne.get(pos + 1)) {
-				if (isSquareUnderAttackOf(PieceType.WHITE_KING, pos - 1, row, col - 1)
-						|| isSquareUnderAttackOf(PieceType.WHITE_PAWN, pos - 1, row, col - 1)) {
-					return true;
-				}
-			}
-		}
-
-		if (row > 0 && row < BOARD_SIZE - 1) {
-			// down threat
-			if (whites.get(pos - BOARD_SIZE) || king.get(pos - BOARD_SIZE) || camps.get(pos - BOARD_SIZE)
-					|| throne.get(pos - BOARD_SIZE)) {
-				if (isSquareUnderAttackOf(PieceType.WHITE_KING, pos + BOARD_SIZE, row + 1, col)
-						|| isSquareUnderAttackOf(PieceType.WHITE_PAWN, pos + BOARD_SIZE, row + 1, col)) {
-					return true;
-				}
-
-			}
-			// up threat
-			if (whites.get(pos + BOARD_SIZE) || king.get(pos + BOARD_SIZE) || camps.get(pos + BOARD_SIZE)
-					|| throne.get(pos + BOARD_SIZE)) {
-				if (isSquareUnderAttackOf(PieceType.WHITE_KING, pos - BOARD_SIZE, row - 1, col)
-						|| isSquareUnderAttackOf(PieceType.WHITE_PAWN, pos - BOARD_SIZE, row - 1, col)) {
-					return true;
-				}
-			}
-
-		}
-		return false;
+		return result;
 	}
 
 	private boolean isWhiteThreatened(int pos, int row, int col) {
 
+		boolean result = false;
 		if (col < BOARD_SIZE - 1 && col > 0) {
 			// right threat
 			if (blacks.get(pos - 1) || camps.get(pos - 1) || throne.get(pos - 1)) {
-				if (isSquareUnderAttackOf(PieceType.BLACK_PAWN, pos + 1, row, col + 1)) {
-					return true;
-				}
+				result = result || isSquareUnderAttackOf(PieceType.BLACK_PAWN, pos + 1, row, col + 1);
 			}
 			// left threat
 			if (blacks.get(pos + 1) || camps.get(pos + 1) || throne.get(pos + 1)) {
-				if (isSquareUnderAttackOf(PieceType.BLACK_PAWN, pos - 1, row, col - 1)) {
-					return true;
-				}
+				result = result || isSquareUnderAttackOf(PieceType.BLACK_PAWN, pos - 1, row, col - 1);
 			}
 		}
 
 		if (row > 0 && row < BOARD_SIZE - 1) {
 			// down threat
 			if (blacks.get(pos - BOARD_SIZE) || camps.get(pos - BOARD_SIZE) || throne.get(pos - BOARD_SIZE)) {
-				if (isSquareUnderAttackOf(PieceType.BLACK_PAWN, pos + BOARD_SIZE, row + 1, col)) {
-					return true;
-				}
+				result = result || isSquareUnderAttackOf(PieceType.BLACK_PAWN, pos + BOARD_SIZE, row + 1, col);
 			}
 			// up threat
 			if (blacks.get(pos + BOARD_SIZE) || camps.get(pos + BOARD_SIZE) || throne.get(pos + BOARD_SIZE)) {
-				if (isSquareUnderAttackOf(PieceType.BLACK_PAWN, pos - BOARD_SIZE, row - 1, col)) {
-					return true;
-				}
+				result = result || isSquareUnderAttackOf(PieceType.BLACK_PAWN, pos - BOARD_SIZE, row - 1, col);
 			}
 		}
 
-		return false;
+		return result;
 	}
 
-	private boolean isKingThreatened(int pos, int row, int col) {
+	private boolean computeKingThreatened() {
+		int pos = this.king.nextSetBit(0);
+		int row = pos / BOARD_SIZE;
+		int col = pos - row * BOARD_SIZE;
 
 		int toCheck = -1;
 		int toCheckRow = -1;
 		int toCheckCol = -1;
+
+		boolean result = false;
 
 		// trono
 		if (this.king.intersects(throne)) {
 			BitSet aroundThroneAndBlacks = (BitSet) aroundThrone.clone();
 			aroundThroneAndBlacks.and(this.blacks);
 			if (aroundThroneAndBlacks.cardinality() == 4) {
-				return true;
+				result = true;
 			} else if (aroundThroneAndBlacks.cardinality() == 3) {
 				aroundThroneAndBlacks.xor(aroundThrone);
 				toCheck = aroundThroneAndBlacks.nextSetBit(0);
 				toCheckRow = toCheck / BOARD_SIZE;
 				toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
-				return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+				result = isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
 			}
 		}
 
-		// attorno al trono
+		// around throne
 		else if (this.king.intersects(aroundThrone)) {
 			BitSet surroundedThroneAndBlack;
+
+			// left around throne
 			if (pos == 39) {
 				surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedLeft.clone();
 				surroundedThroneAndBlack.and(this.blacks);
@@ -497,10 +533,11 @@ public class MILTState {
 					toCheck = surroundedThroneAndBlack.nextSetBit(0);
 					toCheckRow = toCheck / BOARD_SIZE;
 					toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
-					return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+					result = isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
 				}
 			}
 
+			// right around throne
 			else if (pos == 41) {
 				surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedRight.clone();
 				surroundedThroneAndBlack.and(this.blacks);
@@ -509,10 +546,11 @@ public class MILTState {
 					toCheck = surroundedThroneAndBlack.nextSetBit(0);
 					toCheckRow = toCheck / BOARD_SIZE;
 					toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
-					return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+					result = isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
 				}
 			}
 
+			// up around throne
 			else if (pos == 31) {
 				surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedUp.clone();
 				surroundedThroneAndBlack.and(this.blacks);
@@ -521,10 +559,11 @@ public class MILTState {
 					toCheck = surroundedThroneAndBlack.nextSetBit(0);
 					toCheckRow = toCheck / BOARD_SIZE;
 					toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
-					return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+					result = isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
 				}
 			}
 
+			// left around throne
 			else if (pos == 49) {
 				surroundedThroneAndBlack = (BitSet) aroundThroneSurroundedDown.clone();
 				surroundedThroneAndBlack.and(this.blacks);
@@ -533,18 +572,70 @@ public class MILTState {
 					toCheck = surroundedThroneAndBlack.nextSetBit(0);
 					toCheckRow = toCheck / BOARD_SIZE;
 					toCheckCol = toCheck - toCheckRow * BOARD_SIZE;
-					return isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
+					result = isSquareUnderAttackOf(PieceType.BLACK_PAWN, toCheck, toCheckRow, toCheckCol);
 				}
 			}
 		}
-		// vicino barriera/campo + posizione generica
-		return this.isWhiteThreatened(pos, row, col);
+		// other positions
+		else {
+			result = this.isWhiteThreatened(pos, row, col);
+		}
+
+		return result;
 	}
 
-	private void initAvaliableActionsAndStats() {
-		this.availableActions = new ArrayList<>();
-		this.whitePawnsThreatened = 0;
-		this.blackPawnsThreatened = 0;
+	private int computeWhitesThreatened() {
+		int pos = -1;
+		int row = -1;
+		int col = -1;
+		int result = 0;
+
+		// check whites threatened
+		for (pos = whites.nextSetBit(0); pos >= 0; pos = whites.nextSetBit(pos + 1)) {
+			if (pos == Integer.MAX_VALUE) {
+				break;
+			}
+			// System.out.println("white analyzing " + pos);
+			row = pos / BOARD_SIZE;
+			col = pos - row * BOARD_SIZE;
+
+			// checking if pawn is threatened
+			if (isWhiteThreatened(pos, row, col)) {
+				result++;
+				// System.out.println("threatened");
+			}
+		}
+
+		return result;
+
+	}
+
+	private int computeBlacksThreatened() {
+		int pos = -1;
+		int row = -1;
+		int col = -1;
+		int result = 0;
+		// check black captures
+		for (pos = blacks.nextSetBit(0); pos >= 0; pos = blacks.nextSetBit(pos + 1)) {
+			if (pos == Integer.MAX_VALUE) {
+				break;
+			}
+			// System.out.println("black analyzing " + pos);
+			row = pos / BOARD_SIZE;
+			col = pos - row * BOARD_SIZE;
+
+			// checking if pawn is threatened
+			if (isBlackThreatened(pos, row, col)) {
+				result++;
+				// System.out.println("threatened");
+			}
+		}
+		return result;
+
+	}
+
+	private List<MILTAction> computeAvaliableActions() {
+		List<MILTAction> result = new ArrayList<>();
 
 		int pos = -1;
 		int row = -1;
@@ -567,15 +658,10 @@ public class MILTState {
 
 		if (turn == Turn.WHITE) {
 			// king
-			// System.out.println("analyzing king");
 			pos = this.king.nextSetBit(0);
 			if (pos >= 0) {
 				row = pos / BOARD_SIZE;
 				col = pos - row * BOARD_SIZE;
-
-				// checking if king is threatened
-				kingThreatened = isKingThreatened(pos, row, col);
-
 				// checking moves
 				// moving right
 				for (int j = 1; j < BOARD_SIZE - col; j++) {
@@ -583,7 +669,7 @@ public class MILTState {
 					if (whiteInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.WHITE_KING, pos, newPos));
+					result.add(new MILTAction(PieceType.WHITE_KING, pos, newPos));
 				}
 
 				// moving left
@@ -592,7 +678,7 @@ public class MILTState {
 					if (whiteInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.WHITE_KING, pos, newPos));
+					result.add(new MILTAction(PieceType.WHITE_KING, pos, newPos));
 				}
 
 				// moving down
@@ -601,7 +687,7 @@ public class MILTState {
 					if (whiteInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.WHITE_KING, pos, newPos));
+					result.add(new MILTAction(PieceType.WHITE_KING, pos, newPos));
 				}
 
 				// moving up
@@ -610,25 +696,17 @@ public class MILTState {
 					if (whiteInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.WHITE_KING, pos, newPos));
+					result.add(new MILTAction(PieceType.WHITE_KING, pos, newPos));
 				}
 			}
 
-			// System.out.println(whites.cardinality());
 			// white pawns
 			for (pos = whites.nextSetBit(0); pos >= 0; pos = whites.nextSetBit(pos + 1)) {
 				if (pos == Integer.MAX_VALUE) {
 					break;
 				}
-				// System.out.println("white analyzing " + pos);
 				row = pos / BOARD_SIZE;
 				col = pos - row * BOARD_SIZE;
-
-				// checking if pawn is threatened
-				if (isWhiteThreatened(pos, row, col)) {
-					whitePawnsThreatened++;
-					// System.out.println("threatened");
-				}
 
 				// moving right
 				for (int j = 1; j < BOARD_SIZE - col; j++) {
@@ -636,7 +714,7 @@ public class MILTState {
 					if (whiteInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.WHITE_PAWN, pos, newPos));
+					result.add(new MILTAction(PieceType.WHITE_PAWN, pos, newPos));
 				}
 
 				// moving left
@@ -645,7 +723,7 @@ public class MILTState {
 					if (whiteInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.WHITE_PAWN, pos, newPos));
+					result.add(new MILTAction(PieceType.WHITE_PAWN, pos, newPos));
 				}
 
 				// moving down
@@ -654,7 +732,7 @@ public class MILTState {
 					if (whiteInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.WHITE_PAWN, pos, newPos));
+					result.add(new MILTAction(PieceType.WHITE_PAWN, pos, newPos));
 				}
 
 				// moving up
@@ -663,23 +741,7 @@ public class MILTState {
 					if (whiteInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.WHITE_PAWN, pos, newPos));
-				}
-			}
-
-			// check black captures
-			for (pos = blacks.nextSetBit(0); pos >= 0; pos = blacks.nextSetBit(pos + 1)) {
-				if (pos == Integer.MAX_VALUE) {
-					break;
-				}
-				// System.out.println("black analyzing " + pos);
-				row = pos / BOARD_SIZE;
-				col = pos - row * BOARD_SIZE;
-
-				// checking if pawn is threatened
-				if (isBlackThreatened(pos, row, col)) {
-					blackPawnsThreatened++;
-					// System.out.println("threatened");
+					result.add(new MILTAction(PieceType.WHITE_PAWN, pos, newPos));
 				}
 			}
 
@@ -690,15 +752,8 @@ public class MILTState {
 				if (pos == Integer.MAX_VALUE) {
 					break;
 				}
-				// System.out.println("black analyzing " + pos);
 				row = pos / BOARD_SIZE;
 				col = pos - row * BOARD_SIZE;
-
-				// checking if pawn is threatened
-				if (isBlackThreatened(pos, row, col)) {
-					blackPawnsThreatened++;
-					// System.out.println("threatened");
-				}
 
 				// restore blackInvalid bitboard
 				blackInvalid.clear();
@@ -723,7 +778,7 @@ public class MILTState {
 					if (blackInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.BLACK_PAWN, pos, pos + j));
+					result.add(new MILTAction(PieceType.BLACK_PAWN, pos, pos + j));
 				}
 
 				// moving left
@@ -732,7 +787,7 @@ public class MILTState {
 					if (blackInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.BLACK_PAWN, pos, newPos));
+					result.add(new MILTAction(PieceType.BLACK_PAWN, pos, newPos));
 				}
 
 				// moving down
@@ -741,7 +796,7 @@ public class MILTState {
 					if (blackInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.BLACK_PAWN, pos, newPos));
+					result.add(new MILTAction(PieceType.BLACK_PAWN, pos, newPos));
 				}
 
 				// moving up
@@ -750,53 +805,12 @@ public class MILTState {
 					if (blackInvalid.get(newPos)) {
 						break;
 					}
-					availableActions.add(new MILTAction(PieceType.BLACK_PAWN, pos, newPos));
+					result.add(new MILTAction(PieceType.BLACK_PAWN, pos, newPos));
 				}
 			}
-
-			// check whites threatened
-			for (pos = whites.nextSetBit(0); pos >= 0; pos = whites.nextSetBit(pos + 1)) {
-				if (pos == Integer.MAX_VALUE) {
-					break;
-				}
-				// System.out.println("white analyzing " + pos);
-				row = pos / BOARD_SIZE;
-				col = pos - row * BOARD_SIZE;
-
-				// checking if pawn is threatened
-				if (isWhiteThreatened(pos, row, col)) {
-					whitePawnsThreatened++;
-					// System.out.println("threatened");
-				}
-			}
-
-			// check king threatened
-			// System.out.println("analyzing king");
-			pos = this.king.nextSetBit(0);
-			if (pos >= 0) {
-				row = pos / BOARD_SIZE;
-				col = pos - row * BOARD_SIZE;
-
-				// checking if king is threatened
-				kingThreatened = isKingThreatened(pos, row, col);
-			}
-
-		}
-	}
-
-	public MILTState(Turn turn, BitSet whites, BitSet blacks, BitSet king, State.Turn state) {
-		this.turn = turn;
-		this.king = king;
-		this.whites = whites;
-		this.blacks = blacks;
-		this.initAvaliableActionsAndStats();
-		if (state == State.Turn.BLACKWIN) {
-			king.clear();
-		} else if (state == State.Turn.WHITEWIN) {
-			king.clear();
-			king.set(1);
 		}
 
+		return result;
 	}
 
 	public MILTState(Turn turn, BitSet whites, BitSet blacks, BitSet king) {
@@ -804,7 +818,9 @@ public class MILTState {
 		this.king = king;
 		this.whites = whites;
 		this.blacks = blacks;
-		this.initAvaliableActionsAndStats();
+		this.kingThreatened = this.computeKingThreatened();
+		this.whitePawnsThreatened = this.computeWhitesThreatened();
+		this.blackPawnsThreatened = this.computeBlacksThreatened();
 
 	}
 

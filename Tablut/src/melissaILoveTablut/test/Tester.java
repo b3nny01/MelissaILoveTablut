@@ -1,5 +1,24 @@
 package melissaILoveTablut.test;
 
+/*
+ * 
+ * 
+OOOBBBOOO
+OOOOOOOOO
+OOOOOWBOO
+OOOWOOOOO
+BOOBTKOOB
+BOOWOBWOO
+OOOOWOOOO
+OOOOOOOOO
+OOOOBOOOO
+
+ * 
+ * 
+ * 
+ * 
+ * */
+
 import java.util.BitSet;
 
 import it.unibo.ai.didattica.competition.tablut.domain.Action;

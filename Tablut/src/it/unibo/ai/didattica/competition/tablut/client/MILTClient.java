@@ -3,13 +3,14 @@ package it.unibo.ai.didattica.competition.tablut.client;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.BitSet;
-import it.unibo.ai.didattica.competition.tablut.domain.State.Turn;
-import melissaILoveTablut.*;
-import melissaILoveTablut.heuristics.MILTWhiteEvaluator;
-import it.unibo.ai.didattica.competition.tablut.domain.StateTablut;
+
 import it.unibo.ai.didattica.competition.tablut.domain.State;
-import it.unibo.ai.didattica.competition.tablut.domain.State.Pawn;
+import it.unibo.ai.didattica.competition.tablut.domain.StateTablut;
+import melissaILoveTablut.MILTAction;
+import melissaILoveTablut.MILTGame;
+import melissaILoveTablut.MILTSearch;
+import melissaILoveTablut.MILTState;
+
 
 /**
  * 
@@ -48,18 +49,11 @@ public class MILTClient extends TablutClient {
 		String ipAddress = "localhost";
 		int timeout = 60;
 
-		System.out.println(""
-				+ " __  __      _ _               \r\n"
-				+ "|  \\/  | ___| (_)___ ___  __ _ \r\n"
-				+ "| |\\/| |/ _ \\ | / __/ __|/ _` |\r\n"
-				+ "| |  | |  __/ | \\__ \\__ \\ (_| |\r\n"
-				+ "|_|  |_|\\___|_|_|___/___/\\__,_|\r\n"
-				+ " ___        _____     _      _       _   \r\n"
-				+ "|_ _|      |_   _|_ _| |__ | |_   _| |_ \r\n"
-				+ " | |  _   _  | |/ _` | '_ \\| | | | | __| \r\n"
-				+ " | | (  v  ) | | (_| | |_) | | |_| | | \r\n" 
-				+ "|___| '._.'  |_|\\__,_|_.__/|_|\\___/|_| \r\n"
-				+ "");
+		System.out.println("" + " __  __      _ _               \r\n" + "|  \\/  | ___| (_)___ ___  __ _ \r\n"
+				+ "| |\\/| |/ _ \\ | / __/ __|/ _` |\r\n" + "| |  | |  __/ | \\__ \\__ \\ (_| |\r\n"
+				+ "|_|  |_|\\___|_|_|___/___/\\__,_|\r\n" + " ___        _____     _     _       _   \r\n"
+				+ "|_ _|      |_   _|_ _| |__ | |_   _| |_ \r\n" + " | |  _   _  | |/ _` | '_ \\| | | | | __| \r\n"
+				+ " | | (  v  ) | | (_| | |_) | | |_| | | \r\n" + "|___| '._.'  |_|\\__,_|_.__/|_|\\___/|_| \r\n" + "");
 		;
 
 		System.out.println(Arrays.toString(args));
@@ -105,10 +99,6 @@ public class MILTClient extends TablutClient {
 		System.out.println("You are player " + this.getPlayer().toString() + "!");
 
 		State state = null;
-		BitSet whites = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
-		BitSet blacks = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
-		BitSet king = new BitSet(MILTState.BOARD_SIZE * MILTState.BOARD_SIZE);
-
 		while (true) {
 			try {
 				this.read();
@@ -125,37 +115,11 @@ public class MILTClient extends TablutClient {
 			} catch (InterruptedException e) {
 			}
 
-			king.clear();
-			whites.clear();
-			blacks.clear();
 
-			if (this.getPlayer().equals(Turn.WHITE)) {
+			if (this.getPlayer().equals(StateTablut.Turn.WHITE)) {
 				// Mio turno
 				if (this.getCurrentState().getTurn().equals(StateTablut.Turn.WHITE)) {
-					Pawn p;
-					for (int i = 0; i < MILTState.BOARD_SIZE; i++) {
-						for (int j = 0; j < MILTState.BOARD_SIZE; j++) {
-							p = state.getPawn(i, j);
-							switch (p) {
-							case KING -> {
-								king.set(i * MILTState.BOARD_SIZE + j);
-							}
-
-							case WHITE -> {
-								whites.set(i * MILTState.BOARD_SIZE + j);
-
-							}
-
-							case BLACK -> {
-								blacks.set(i * MILTState.BOARD_SIZE + j);
-							}
-							default -> {
-							}
-							}
-						}
-					}
-					MILTWhiteEvaluator evaluator = new MILTWhiteEvaluator();
-					MILTState miltState = new MILTState(MILTState.Turn.WHITE, whites, blacks, king, state.getTurn());
+					MILTState miltState = MILTState.from(StateTablut.Turn.WHITE, state);
 					MILTSearch miltSearch = new MILTSearch(miltGame, timeout - 2);
 					MILTAction miltBestAction = miltSearch.makeDecision(miltState);
 					try {
@@ -190,29 +154,7 @@ public class MILTClient extends TablutClient {
 
 				// Mio turno
 				if (this.getCurrentState().getTurn().equals(StateTablut.Turn.BLACK)) {
-					Pawn p;
-					for (int i = 0; i < MILTState.BOARD_SIZE; i++) {
-						for (int j = 0; j < MILTState.BOARD_SIZE; j++) {
-							p = state.getPawn(i, j);
-							switch (p) {
-							case KING -> {
-								king.set(i * MILTState.BOARD_SIZE + j);
-							}
-
-							case WHITE -> {
-								whites.set(i * MILTState.BOARD_SIZE + j);
-
-							}
-
-							case BLACK -> {
-								blacks.set(i * MILTState.BOARD_SIZE + j);
-							}
-							default -> {
-							}
-							}
-						}
-					}
-					MILTState miltState = new MILTState(MILTState.Turn.BLACK, whites, blacks, king, state.getTurn());
+					MILTState miltState = MILTState.from(Turn.BLACK, state);
 					MILTSearch miltSearch = new MILTSearch(miltGame, timeout - 2);
 					MILTAction miltBestAction = miltSearch.makeDecision(miltState);
 					try {
