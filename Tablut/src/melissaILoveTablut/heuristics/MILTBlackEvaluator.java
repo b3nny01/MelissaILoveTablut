@@ -18,13 +18,13 @@ public class MILTBlackEvaluator implements MILTEvaluator {
 			0, 2, 3, -1, 0, -1, 3, 2, 0, 
 			0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	
-	private final static int B_W_DIFF_VAL = 20;
-	private final static int B_THREATENED = 5;
-	private final static int W_THREATENED = 10;
-	private final static int K_THREATENED = 150;
+	private final static int B_W_DIFF_VAL = 30;
+	private final static int B_THREATENED = 10;
+	private final static int W_THREATENED = 15;
+	private final static int K_THREATENED = 30;
 	private final static int KING_POS_VAL = 5;
 	private final static int KING_MOV_VAL = 10;
-	private final static int FREE_WAYS_VAL = 20;
+	private final static int FREE_WAYS_VAL = 25;
 
 	private double evaluateKingPos(MILTState state) {
 		int kingPos = state.getKing().nextSetBit(0);
