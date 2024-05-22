@@ -27,7 +27,7 @@ We started with a [base repository](https://github.com/AGalassi/TablutCompetitio
 Our task was to implement the algorithm for finding the best move given a Tablut position. We were allowed to use any techniques related to AI, both symbolic and sub-symbolic. The bot could be written in any language as long as it adhered to the communication protocol, with the only limitation being that it couldn't perform any computation during the opponent's turn.
 As a group, we decided to develop the bot in Java to be consistent with the given code. We also decided to rely on symbolic AI, using the alpha-beta algorithm for the best-move search, and we implemented our own state representation involving BitBoards. In the following paragraphs, we'll discuss the solutions we adopted.
 
-## State Rapresentation
+## State Representation
 
 In the given repository, a Tablut position was represented using an enum matrix. Although enums are relatively efficient in Java, we decided to switch to BitBoards. A BitBoard is a sequence of bits, each corresponding to a cell on the game board. Since each bit can only have 2 values, we needed a BitBoard for each type of piece in a Tablut game. For example, the start position is represented as follows:
 
@@ -41,7 +41,7 @@ BitBoards provide a simple yet highly efficient way to analyze Tablut positions.
 
 ## Alpha-Beta and Heuristics
 
-For the best-move search we used on the [aima](https://github.com/aimacode/aima-java.git) implementation of the iterative deepening alpha-beta algorithm, so we created a `MILTAction` class rapresenting a move and a `MILTState` class which rapresents a Tablut position and offers the following main methods:
+For the best-move search we used on the [aima](https://github.com/aimacode/aima-java.git) implementation of the iterative deepening alpha-beta algorithm, so we created a `MILTAction` class representing a move and a `MILTState` class which represents a Tablut position and offers the following main methods:
 
 * computation of available moves from the current position (`computeAvailableActions()`)
 * computation of a new position obtained applying a move on the current one (`apply(MILTAction)`)
