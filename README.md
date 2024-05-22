@@ -50,7 +50,7 @@ theese two classes also offer methods to parse/cast an entity of the MILT domain
 
 After that we wrapped this classes inside a `MILTGame` class, which implements the `aima.core.search.adversarial.Game` interface, and created a `MILTSearch` class extending `aima.core.search.adversarial.IterativeDeepeningAlphaBetaSearch` which offers the support for the alpha-beta.
 For the heuristics we adopted the Visitor pattern, creating two `MILTEvaluator` classes, one for the black and one for the white, acting as visitors of `MILTState`.
-Our heuritics considers:
+Our heuristics considers:
 
 * the difference between black and white pawns
 * the number of threatened white and black pawns
