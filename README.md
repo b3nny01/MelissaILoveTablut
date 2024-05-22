@@ -57,7 +57,7 @@ Our heuristics considers:
 * king threats
 * the number of potentially available escapes for the king
 * the number of effective available escapes for the king
-* the number of empty 'ways' where a ways are the square where the white pawns are initially positioned
+* the number of empty 'ways' where a way is one of the squares where the white pawns are initially positioned
 
 ## Usage
 
