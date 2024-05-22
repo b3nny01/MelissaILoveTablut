@@ -48,7 +48,7 @@ For the best-move search we used on the [aima](https://github.com/aimacode/aima-
 
 theese two classes also offer methods to parse/cast an entity of the MILT domain from/to an entity of the unibo tablut domain (the one used to interact with the server).
 
-After that we wrapped this classes inside a `MILTGame` class, which implemented the `aima.core.search.adversarial.Game` interface, and created a `MILTSearch` class extending `aima.core.search.adversarial.IterativeDeepeningAlphaBetaSearch` which offers the support for the alpha-beta.
+After that we wrapped this classes inside a `MILTGame` class, which implements the `aima.core.search.adversarial.Game` interface, and created a `MILTSearch` class extending `aima.core.search.adversarial.IterativeDeepeningAlphaBetaSearch` which offers the support for the alpha-beta.
 For the heuristics we adopted the Visitor pattern, creating two `MILTEvaluator` classes, one for the black and one for the white, acting as visitors of `MILTState`.
 Our heuritics considers:
 
