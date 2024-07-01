@@ -18,6 +18,7 @@
 ## Intro
 
 MelissaILoveTablut (MILT) is a player developed for the AI Student Challenge, a tournament where bots created by groups of students compete. The board game chosen for the tournament is Ashton Tablut (you can find the rules [here](http://ai.unibo.it/games/tablut)).
+MILT gained the second place in 2024 competition 🥈.
 We started with a [base repository](https://github.com/AGalassi/TablutCompetition.git) provided by the staff, which mainly contained:
 
 * An implementation of a Random Player Client, demonstrating the communication protocol for interacting with the server.
