@@ -38,7 +38,7 @@ Additionally, we used a series of static utility BitBoards, useful for computing
 
 <img src="./_readmeImgs_/staticStateRapresentation.png"/>
 
-BitBoards provide a simple yet highly efficient way to analyze Tablut positions. For example, suppose the king is in the square to the left of the throne, and we want to determine if it is surrounded by black pawns. We can compute the XOR between the `aroundThroneSurroundedLeft` and the `blacks` BitBoards and then count the number of bits set to one in the result. If this number equals three, the king is surrounded and the black player wins the game.
+BitBoards provide a simple yet highly efficient way to analyze Tablut positions. For example, suppose the king is in the square to the left of the throne, and we want to determine if it is surrounded by black pawns. We can compute the AND between the `aroundThroneSurroundedLeft` and the `blacks` BitBoards and then count the number of bits set to one in the result. If this number equals three, the king is surrounded and the black player wins the game.
 
 ## Alpha-Beta and Heuristics
 
